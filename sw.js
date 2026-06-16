@@ -11,12 +11,13 @@
      still renders offline after the first online visit.
    Bump CACHE on any shell change to retire the old cache.
    ============================================================= */
-const CACHE = "nr-shell-v11";
+const CACHE = "nr-shell-v12";
 
 // Paths are relative to the SW scope, so this works under a Pages subpath.
 const SHELL = [
   "./",
   "./index.html",      // marketing landing
+  "./account.html",    // sign up / sign in interstitial
   "./sensor-setup.html",
   "./app.html",        // the instrument app
   "./manifest.webmanifest",
@@ -33,6 +34,9 @@ const SHELL = [
   "./js/scores.js",
   "./js/csv.js",
   "./js/store.js",
+  "./js/config.js",
+  "./js/auth.js",
+  "./js/store-remote.js",
   "./js/history.js",
   "./js/app.js",
   "./icons/icon.svg",

@@ -41,10 +41,11 @@
             <span class="caret">▾</span>
           </button>
           <div class="profile-menu hidden" id="profile-menu">
-            <div class="profile-menu-head">Who's being measured?</div>
-            <div class="profile-list" id="profile-list"></div>
+            <div class="profile-menu-head" id="profile-menu-head">Account</div>
+            <div class="profile-menu-sub" id="profile-menu-email"></div>
             <div class="profile-menu-actions">
-              <button class="profile-menu-item" id="add-profile-btn">+ Add person</button>
+              <a class="profile-menu-item hidden" id="signin-link" href="account.html">Sign in to save across devices</a>
+              <button class="profile-menu-item hidden" id="signout-btn">Sign out</button>
               <button class="profile-menu-item" id="guest-mode-btn">Guest run · won't be saved</button>
             </div>
           </div>
@@ -415,6 +416,11 @@
   <script src="js/scores.js"></script>
   <script src="js/csv.js"></script>
   <script src="js/store.js"></script>
+  <!-- Accounts + cloud history (Supabase). Local IndexedDB store stays the guest fallback. -->
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store-remote.js"></script>
   <script src="js/history.js"></script>
   <script src="js/app.js"></script>
 

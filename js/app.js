@@ -28,6 +28,7 @@
   const session = {
     mode: "finger",
     guest: false, // guest runs are computed but never saved (no baseline pollution)
+    account: null, // signed-in Supabase user, or null (local/guest)
     connected: false,
     baselinePPG: null,
     taskPPG: null,
@@ -575,68 +576,69 @@
     else location.hash = target;
   }
 
-  // ---- Profiles & guest mode (W3) ------------------------------------------
-  async function refreshProfileUI() {
-    const profs = await NR.store.getProfiles();
-    const active = await NR.store.getActiveProfile();
+  // ---- Account identity & guest mode ---------------------------------------
+  // One account = one person: the signed-in Supabase user IS the profile.
+  // Decide the store backend up front — Supabase when signed in, else local
+  // IndexedDB (the guest fallback). app.js / history.js read NR.store at call
+  // time, so swapping it here is transparent to them.
+  async function initStore() {
+    try {
+      if (NR.auth && NR.auth.enabled) {
+        const user = await NR.auth.getUser();
+        if (user) {
+          session.account = user;
+          NR.store = NR.makeRemoteStore(user);
+        }
+      }
+    } catch (e) {
+      console.warn("[NR] auth init failed; using local store", e);
+    }
+    await NR.store.init();
+  }
+
+  function refreshProfileUI() {
     const chip = el("#profile-chip");
+    const signedIn = !!session.account;
+    const name = signedIn && NR.auth ? NR.auth.displayName(session.account) : "";
+
     if (session.guest) {
       setText("#profile-avatar", "G");
       setText("#profile-name", "Guest");
       if (chip) chip.classList.add("guest");
+    } else if (signedIn) {
+      setText("#profile-avatar", (name || "Y").slice(0, 1).toUpperCase());
+      setText("#profile-name", name || "You");
+      if (chip) chip.classList.remove("guest");
     } else {
-      setText("#profile-avatar", (active ? active.name : "?").slice(0, 1).toUpperCase());
-      setText("#profile-name", active ? active.name : "—");
+      setText("#profile-avatar", "L");
+      setText("#profile-name", "Local");
       if (chip) chip.classList.remove("guest");
     }
-    setText("#subject-name", session.guest ? "Guest · won't be saved" : (active ? active.name : "—"));
+    setText("#subject-name",
+      session.guest ? "Guest · won't be saved"
+        : signedIn ? name
+          : "this device only");
 
-    const list = el("#profile-list");
-    if (list) {
-      list.innerHTML = profs.map((p) => {
-        const isActive = !session.guest && active && p.id === active.id;
-        return `<div class="profile-row ${isActive ? "active" : ""}" data-id="${p.id}">
-            <span class="avatar small">${p.name.slice(0, 1).toUpperCase()}</span>
-            <span class="profile-row-name">${p.name}</span>
-            ${isActive ? '<span class="profile-check">✓</span>' : ""}
-            ${profs.length > 1 ? `<button class="profile-del" data-del="${p.id}" title="Delete person">×</button>` : ""}
-          </div>`;
-      }).join("");
-      NR.dom.all(".profile-row", list).forEach((r) =>
-        r.addEventListener("click", (e) => {
-          if (e.target.closest(".profile-del")) return;
-          switchProfile(r.dataset.id);
-        })
-      );
-      NR.dom.all(".profile-del", list).forEach((b) =>
-        b.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const p = profs.find((x) => x.id === b.dataset.del);
-          if (!confirm(`Delete "${p.name}" and all of their saved sessions? This can't be undone.`)) return;
-          await NR.store.deleteProfile(b.dataset.del);
-          await refreshProfileUI();
-          if (!el("#screen-history").classList.contains("hidden")) NR.history.render();
-        })
-      );
+    const head = el("#profile-menu-head");
+    const sub = el("#profile-menu-email");
+    const signinLink = el("#signin-link");
+    const signoutBtn = el("#signout-btn");
+    if (signedIn) {
+      if (head) head.textContent = "Signed in";
+      if (sub) sub.textContent = session.account.email || "";
+      if (signinLink) signinLink.classList.add("hidden");
+      if (signoutBtn) signoutBtn.classList.remove("hidden");
+    } else {
+      if (head) head.textContent = "Not signed in";
+      if (sub) sub.textContent = "Sessions are saved on this device only.";
+      if (signinLink) signinLink.classList.remove("hidden");
+      if (signoutBtn) signoutBtn.classList.add("hidden");
     }
   }
 
-  async function switchProfile(id) {
-    session.guest = false;
-    NR.store.setActiveProfileId(id);
-    closeProfileMenu();
-    await refreshProfileUI();
-    if (!el("#screen-history").classList.contains("hidden")) NR.history.render();
-  }
-
-  async function addProfileFlow() {
-    const name = (prompt("Name for the new person:") || "").trim();
-    if (!name) return;
-    const p = await NR.store.addProfile(name);
-    session.guest = false;
-    NR.store.setActiveProfileId(p.id);
-    closeProfileMenu();
-    await refreshProfileUI();
+  async function signOut() {
+    try { if (NR.auth && NR.auth.enabled) await NR.auth.signOut(); } catch (e) {}
+    window.location.href = "index.html"; // back to the landing as a clean signed-out state
   }
 
   function enableGuest() {
@@ -668,7 +670,7 @@
   //  BIND UI
   // ===========================================================================
   function bind() {
-    NR.store.init().then(refreshProfileUI); // open datastore, ensure default profile, paint chip
+    initStore().then(refreshProfileUI); // pick store backend (account vs local), paint chip
 
     const sourceLabel = el("#source-mode-label");
     const sourceDetail = el("#source-mode-detail");
@@ -746,7 +748,7 @@
       e.target.value = "";
     });
     el("#history-clear").addEventListener("click", async () => {
-      if (!confirm("Delete ALL saved profiles and sessions? This cannot be undone.")) return;
+      if (!confirm("Delete all of your saved sessions? This cannot be undone.")) return;
       await NR.store.clearAll();
       NR.history.render();
     });
@@ -754,7 +756,8 @@
     // Profiles & guest mode.
     el("#profile-chip").addEventListener("click", (e) => { e.stopPropagation(); toggleProfileMenu(); });
     el("#subject-switch").addEventListener("click", (e) => { e.stopPropagation(); toggleProfileMenu(); });
-    el("#add-profile-btn").addEventListener("click", addProfileFlow);
+    const signoutBtn = el("#signout-btn");
+    if (signoutBtn) signoutBtn.addEventListener("click", signOut);
     el("#guest-mode-btn").addEventListener("click", enableGuest);
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".profile-ctl")) closeProfileMenu();

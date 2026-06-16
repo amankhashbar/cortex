@@ -614,6 +614,7 @@ select {
   border-radius: 12px; padding: 8px; box-shadow: 0 18px 40px rgba(12,17,22,0.12);
 }
 .profile-menu-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-2); padding: 6px 8px; }
+.profile-menu-sub { font-size: 13px; color: var(--ink); padding: 0 8px 6px; word-break: break-all; }
 .profile-row { display: flex; align-items: center; gap: 9px; padding: 8px; border-radius: 8px; cursor: pointer; }
 .profile-row:hover { background: var(--panel-2); }
 .profile-row.active { background: var(--teal-dim); }
@@ -622,7 +623,7 @@ select {
 .profile-del { background: none; border: none; color: var(--muted-2); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 4px; }
 .profile-del:hover { color: var(--red); }
 .profile-menu-actions { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 6px; display: flex; flex-direction: column; }
-.profile-menu-item { text-align: left; background: none; border: none; color: var(--muted); cursor: pointer; font-family: var(--body); font-size: 13px; padding: 8px; border-radius: 8px; }
+.profile-menu-item { display: block; text-align: left; text-decoration: none; background: none; border: none; color: var(--muted); cursor: pointer; font-family: var(--body); font-size: 13px; padding: 8px; border-radius: 8px; }
 .profile-menu-item:hover { background: var(--panel-2); color: var(--ink); }
 
 .subject-line { font-size: 13.5px; color: var(--muted); margin: 6px 0 22px; }
