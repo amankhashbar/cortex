@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NeuroReadiness">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f161d"/>
+      <stop offset="1" stop-color="#0c1116"/>
+    </linearGradient>
+  </defs>
+  <!-- Full-bleed background; trace kept within the maskable safe zone (~80%). -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path d="M118 268 H198 l24 -92 32 176 28 -118 22 66 H394"
+        fill="none" stroke="#2dd4bf" stroke-width="20"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="394" cy="268" r="14" fill="#2dd4bf"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NeuroReadiness">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f161d"/>
+      <stop offset="1" stop-color="#0c1116"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="8" y="8" width="496" height="496" rx="104" fill="none" stroke="rgba(45,212,191,0.18)" stroke-width="4"/>
+  <!-- PPG pulse trace -->
+  <path d="M64 276 H176 l28 -120 38 224 34 -150 26 86 H448"
+        fill="none" stroke="#2dd4bf" stroke-width="22"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="448" cy="276" r="16" fill="#2dd4bf"/>
+</svg>

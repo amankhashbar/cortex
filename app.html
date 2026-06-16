@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroReadiness — Readiness Check</title>
+  <meta name="description" content="A browser cognitive-readiness instrument with three short tasks, physiological context, and a data-confidence gate. Not a medical device." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <!-- PWA: installable + offline. Harmless on file:// (SW only registers over http/https). -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0c1116" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NeuroReadiness" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="brand" data-nav="overview" title="Overview">
+        <h1>NeuroReadiness</h1>
+        <span class="tag">cognitive readiness</span>
+      </button>
+      <nav class="topnav">
+        <button class="nav-link" data-nav="overview">Overview</button>
+        <button class="nav-link active" data-nav="check">Check</button>
+        <button class="nav-link" data-nav="history">History</button>
+        <button class="nav-link" data-nav="faq">FAQ</button>
+      </nav>
+      <div class="topbar-right">
+        <div class="profile-ctl">
+          <button class="profile-chip" id="profile-chip">
+            <span class="avatar" id="profile-avatar">Y</span>
+            <span class="profile-chip-name" id="profile-name">You</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="profile-menu hidden" id="profile-menu">
+            <div class="profile-menu-head">Who's being measured?</div>
+            <div class="profile-list" id="profile-list"></div>
+            <div class="profile-menu-actions">
+              <button class="profile-menu-item" id="add-profile-btn">+ Add person</button>
+              <button class="profile-menu-item" id="guest-mode-btn">Guest run · won't be saved</button>
+            </div>
+          </div>
+        </div>
+        <div class="sensor-status">
+          <span class="sensor-dot" id="sensor-dot"></span>
+          <span id="sensor-label">disconnected</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Live console (visible during capture + tasks) -->
+    <section class="console hidden" id="console">
+      <div class="wave-wrap">
+        <span class="wave-label">PPG · AC component</span>
+        <canvas id="wave"></canvas>
+        <span class="motion-badge hidden" id="motion-badge">⚠ motion</span>
+      </div>
+      <div class="readouts">
+        <div class="readout">
+          <div class="r-label">Heart rate</div>
+          <div class="r-value"><span id="live-hr">—</span><span class="r-unit">bpm</span></div>
+        </div>
+        <div class="readout">
+          <div class="r-label">RMSSD proxy</div>
+          <div class="r-value"><span id="live-rmssd">—</span><span class="r-unit">ms</span></div>
+        </div>
+        <div class="readout">
+          <div class="r-label">Perfusion idx</div>
+          <div class="r-value"><span id="live-pi">—</span><span class="r-unit">%</span></div>
+        </div>
+        <div class="readout">
+          <div class="r-label">Signal score</div>
+          <div class="r-value"><span id="live-q">—</span><span class="r-unit">/100</span></div>
+        </div>
+        <div class="q-meter">
+          <div class="r-label"><span>Data confidence (live)</span><button class="btn btn-ghost" id="sim-motion" style="padding:2px 10px;font-size:11px;">simulate motion</button></div>
+          <div class="q-meter-track"><div class="q-meter-fill warn" id="q-meter-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: overview / landing -->
+    <section class="screen hidden" id="screen-overview">
+      <div class="hero">
+        <div class="hero-eyebrow">cognitive-readiness instrument · runs in your browser</div>
+        <h2 class="hero-title">Know whether your head is actually in the game.</h2>
+        <p class="hero-lede">
+          Three short cognitive tasks plus a pulse sensor, fused into readiness scores —
+          and, before anything else, a <strong>data-confidence</strong> score that tells you
+          how much to trust the rest. A number from a bad signal is worse than no number at all.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-nav="check">Run a check</button>
+          <button class="btn btn-ghost" data-nav="faq">How it works</button>
+        </div>
+        <div class="hero-note" id="source-privacy-note">No account, no upload: session data stays on your device.</div>
+      </div>
+
+      <div class="loop-grid">
+        <div class="loop-card">
+          <div class="loop-num">1</div>
+          <h3>Check your fit</h3>
+          <p>Place the sensor; the session refuses to start until the live signal holds clean for a few seconds. Bad placement never becomes a bad score.</p>
+        </div>
+        <div class="loop-card">
+          <div class="loop-num">2</div>
+          <h3>Run three tasks</h3>
+          <p>PVT (reaction time), Stroop (inhibition), 2-back (working memory) — a few minutes total — while heart rate and an HRV proxy are captured.</p>
+        </div>
+        <div class="loop-card">
+          <div class="loop-num">3</div>
+          <h3>Read the trend</h3>
+          <p>Scores save per person and chart over time against your own baseline. The value compounds: the more you log, the more it tells you about you.</p>
+        </div>
+      </div>
+
+      <div class="thesis card">
+        <h3>The honesty is the product</h3>
+        <p>
+          NeuroReadiness measures cognition and peripheral physiology. It does
+          <strong>not</strong> measure cerebral blood flow, it is <strong>not a medical device</strong>,
+          and it never claims either. When a signal is uncertain the interface visibly distrusts
+          itself — the console desaturates and the waveform turns amber — and the confidence score
+          drops rather than the app pretending. The experimental temple placement is superficial
+          skin perfusion only, and is confidence-capped on purpose.
+        </p>
+        <button class="link-btn" data-nav="faq">Read what each test can and can't tell you →</button>
+      </div>
+    </section>
+
+    <!-- SCREEN: setup -->
+    <section class="screen hidden" id="screen-setup">
+      <div class="card">
+        <h2 class="screen-title">Set up a session</h2>
+        <p class="screen-lede">
+          NeuroReadiness benchmarks alertness, cognitive control and working memory with three short tasks,
+          while PPG and motion data provide physiological context. Pick a sensor placement to begin.
+          <strong id="source-mode-label">Simulated demo mode.</strong>
+          <span id="source-mode-detail">Synthetic sensor data will demonstrate the complete workflow.</span>
+        </p>
+
+        <div class="mode-row">
+          <button class="mode-btn" data-mode="finger">
+            <div class="m-title">Finger PPG</div>
+            <div class="m-desc">Standard placement. Strong, clean pulse signal — the reliable default.</div>
+          </button>
+          <button class="mode-btn" data-mode="temple">
+            <div class="m-title">Temple PPG · experimental</div>
+            <div class="m-desc">Forehead/temple placement. Weak superficial perfusion only — not cerebral blood flow.</div>
+          </button>
+        </div>
+
+        <div class="warning hidden" id="temple-warning">
+          <strong>Honesty note:</strong> temple/forehead PPG measures <em>superficial skin perfusion</em>, not
+          cerebral blood flow. It is noisy and unvalidated, so the session caps data confidence accordingly.
+          Included as an exploratory mode, clearly labelled.
+        </div>
+
+        <div class="subject-line" id="subject-line">
+          Checking for <strong id="subject-name">You</strong>
+          <button class="link-btn" id="subject-switch">switch person</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="connect-btn">Start demo &amp; check fit</button>
+          <a class="btn btn-ghost" href="sensor-setup.html">Sensor setup</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: fit check (signal-quality gate) -->
+    <section class="screen hidden" id="screen-fit">
+      <div class="card">
+        <h2 class="screen-title">Check your fit</h2>
+        <p class="screen-lede">
+          Position the sensor and hold still. We only start once the signal is clean and stable —
+          a readiness number from a bad signal is worse than no number at all.
+        </p>
+
+        <div class="fit-layout">
+          <div class="placement-guide" id="placement-guide"></div>
+
+          <div class="fit-gate-wrap">
+            <div class="fit-status bad" id="fit-status">
+              <div class="fit-status-dot"></div>
+              <div class="fit-gate-label" id="fit-gate-label">Acquiring a clean signal…</div>
+            </div>
+            <div class="fit-gate-track"><div class="fit-gate-fill" id="fit-gate-fill" style="width:0%"></div></div>
+            <p class="fit-hint">Watch the waveform above — it turns amber and the console dims when the signal can't be trusted.</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="fit-continue" disabled>Start baseline</button>
+          <button class="btn btn-ghost" id="fit-back">Back</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: baseline -->
+    <section class="screen hidden" id="screen-baseline">
+      <div class="card">
+        <h2 class="screen-title">Resting baseline</h2>
+        <p class="screen-lede">
+          Sit still and breathe normally while we capture a resting reference. The cognitive tasks are
+          later compared against this to estimate physiological load. Keep the sensor steady.
+        </p>
+
+        <div class="field-row">
+          <label for="baseline-dur">Baseline duration</label>
+          <select id="baseline-dur">
+            <option value="15">15 s (quick demo)</option>
+            <option value="30">30 s</option>
+            <option value="60" selected>60 s (full)</option>
+          </select>
+        </div>
+
+        <div class="baseline-wrap">
+          <div class="baseline-ring" id="baseline-ring">
+            <div class="inner">
+              <div>
+                <div class="count" id="baseline-count">60</div>
+                <div class="count-label">seconds</div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="baseline-start">Start baseline</button>
+            <button class="btn btn-ghost" id="baseline-skip">Skip to tasks</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: tasks -->
+    <section class="screen hidden" id="screen-tasks">
+      <div class="task-progress">
+        <div class="task-pips">
+          <div class="task-pip"></div>
+          <div class="task-pip"></div>
+          <div class="task-pip"></div>
+        </div>
+        <span id="task-phase">Preparing…</span>
+      </div>
+      <div class="task-stage" id="task-stage"></div>
+    </section>
+
+    <!-- SCREEN: results -->
+    <section class="screen hidden" id="screen-results">
+      <div class="card">
+        <h2 class="screen-title">Readiness summary</h2>
+        <p class="screen-lede">Heuristic readouts from this session. Read the confidence panel first — it gates everything below it.</p>
+
+        <div class="confidence-panel warn" id="confidence-panel">
+          <div class="confidence-figure">
+            <div class="big" id="confidence-value">—</div>
+            <div class="lbl">data confidence</div>
+          </div>
+          <div class="confidence-body">
+            <h3>How much to trust this session</h3>
+            <div class="why" id="confidence-why">—</div>
+            <ul id="confidence-notes"></ul>
+          </div>
+        </div>
+
+        <div class="score-grid" id="score-grid"></div>
+
+        <div class="save-row" id="save-row">
+          <div class="save-status" id="save-status">Saved to <span id="save-profile">history</span></div>
+          <div class="tag-picker" id="tag-picker">
+            <span class="tag-label">Tag this session:</span>
+            <button class="tag-chip" data-tag="good sleep">good sleep</button>
+            <button class="tag-chip" data-tag="slept badly">slept badly</button>
+            <button class="tag-chip" data-tag="caffeine">caffeine</button>
+            <button class="tag-chip" data-tag="post-workout">post-workout</button>
+            <button class="tag-chip" data-tag="stressed">stressed</button>
+          </div>
+        </div>
+
+        <div class="results-footer">
+          <span id="session-stats">—</span>
+          <div class="btn-row">
+            <button class="btn" id="export-btn">Export CSV</button>
+            <button class="btn" id="view-history-btn">View history</button>
+            <button class="btn btn-primary" id="restart-btn">New session</button>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          <strong>Not a medical device.</strong> NeuroReadiness produces heuristic performance proxies from
+          reaction-time tasks and photoplethysmography. It does not measure cerebral blood flow, diagnose any
+          condition, or provide medical advice. Scores are relative indicators for self-tracking and product
+          exploration only. Temple-mode PPG reflects superficial perfusion, not brain hemodynamics.
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: history -->
+    <section class="screen hidden" id="screen-history">
+      <div class="card">
+        <div class="history-top">
+          <div>
+            <h2 class="screen-title">History</h2>
+            <p class="history-sub"><span id="history-profile">—</span> · <span id="history-count">—</span></p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="history-export">Export data</button>
+            <button class="btn btn-ghost" id="history-import-btn">Import</button>
+            <input type="file" id="history-import" accept="application/json" class="hidden" />
+            <button class="btn btn-ghost" id="history-clear">Clear all</button>
+          </div>
+        </div>
+
+        <div id="history-empty" class="history-empty hidden">
+          <p>No sessions recorded yet.</p>
+          <p class="muted">Run a check and your readiness will start charting here — daily use builds your personal baseline.</p>
+          <button class="btn btn-primary" id="history-start-check">Run your first check</button>
+        </div>
+
+        <div id="history-content" class="hidden">
+          <div class="headline">
+            <div class="headline-main">
+              <div class="headline-value" id="headline-value">—</div>
+              <div class="headline-label">readiness</div>
+            </div>
+            <div class="headline-info">
+              <div class="headline-delta neutral" id="headline-delta">—</div>
+              <div class="headline-when" id="headline-when">—</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-header">
+              <div class="metric-tabs" id="metric-tabs"></div>
+              <span class="chart-better" id="chart-better"></span>
+            </div>
+            <div id="history-chart"></div>
+          </div>
+
+          <h3 class="log-title">Session log</h3>
+          <div class="history-log" id="history-log"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN: FAQ / about the science -->
+    <section class="screen hidden" id="screen-faq">
+      <div class="card">
+        <h2 class="screen-title">FAQ &amp; about the science</h2>
+        <p class="screen-lede">What each test measures, what it categorically can't do, and why this is built the way it is.</p>
+
+        <div class="faq">
+          <details open>
+            <summary>What does it actually measure?</summary>
+            <p>Three cognitive tasks and two physiological proxies:</p>
+            <ul>
+              <li><strong>PVT</strong> (psychomotor vigilance) — reaction time and sustained attention; lapses are the classic fatigue signature.</li>
+              <li><strong>Stroop</strong> — response inhibition / cognitive control, from the slowdown on incongruent colour-word trials.</li>
+              <li><strong>2-back</strong> — working memory, scored as d′ (sensitivity), so guessing doesn't inflate it.</li>
+              <li><strong>Heart rate &amp; RMSSD proxy</strong> — from PPG inter-beat intervals. On PPG this is strictly <em>pulse-rate variability</em>, so it's labelled "proxy" throughout.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>What can it <em>not</em> do?</summary>
+            <p>
+              It does not measure cerebral blood flow, brain activity, or anything neurological.
+              It is <strong>not a medical device</strong>: no diagnosis, no medical advice. Scores are
+              relative, heuristic indicators for self-tracking and product exploration — useful against
+              your own history, not as a clinical number.
+            </p>
+          </details>
+
+          <details>
+            <summary>What's the "temple" placement, and why is it capped?</summary>
+            <p>
+              An experimental forehead/temple sensor position. Even there, PPG reflects
+              <strong>superficial skin perfusion only</strong> — not brain hemodynamics. It is noisier and
+              unvalidated, so the app lowers data confidence for temple sessions rather than overclaiming.
+              It's included, clearly labelled, because honest exploration beats a hidden limitation.
+            </p>
+          </details>
+
+          <details>
+            <summary>Why an active test instead of passive tracking?</summary>
+            <p>
+              Passive wearables infer state while you do nothing. An active check measures the thing you
+              actually care about — current performance — directly, and gives a clean, repeatable
+              baseline-vs-load comparison in a few minutes. It's a deliberate instrument reading, not an
+              ambient guess.
+            </p>
+          </details>
+
+          <details>
+            <summary>What is the data-confidence score?</summary>
+            <p>
+              The score that gates all the others. It folds in signal quality, motion-clean fraction,
+              task completion, and placement mode. A readiness number from a bad signal is worse than no
+              number, so the interface shows when it distrusts its own data — the live console desaturates
+              and the waveform turns amber the moment perfusion drops or motion is detected.
+            </p>
+          </details>
+
+          <details>
+            <summary>Where does my data go?</summary>
+            <p>
+              Nowhere. Everything is stored locally in your browser (IndexedDB), per person. There is no
+              account and no upload. You can export or import your history as JSON for backup or device
+              migration from the History page. Storage is unreliable on <code>file://</code>, so the hosted
+              (and installable) version is the real home for a stateful, daily product.
+            </p>
+          </details>
+
+          <details>
+            <summary>Can I install it?</summary>
+            <p>
+              Yes — it's a PWA. On the hosted version your browser will offer "Install" (or "Add to Home
+              Screen"); it then runs offline with its own icon, no app store, no fee. The
+              double-click-the-file demo still works for a quick look, just without reliable storage.
+            </p>
+          </details>
+        </div>
+
+        <div class="disclaimer">
+          <strong>Not a medical device.</strong> NeuroReadiness produces heuristic performance proxies from
+          reaction-time tasks and photoplethysmography. It does not measure cerebral blood flow, diagnose any
+          condition, or provide medical advice.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" data-nav="check">Run a check</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Classic scripts share the global NR namespace; no build step. -->
+  <script src="js/util.js"></script>
+  <script src="js/sensor.js"></script>
+  <script src="js/ppg.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/scores.js"></script>
+  <script src="js/csv.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- PWA service worker. Only registers over http/https (a secure context),
+       so the file:// double-click demo is unaffected. -->
+  <script>
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((e) =>
+          console.warn("[NR] service worker registration failed", e)
+        );
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "NeuroReadiness — Cognitive Readiness",
+  "short_name": "NeuroReadiness",
+  "description": "A browser cognitive-readiness instrument: three short tasks plus a PPG sensor, fused into honest readiness scores with a data-confidence gate. Not a medical device.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["health", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

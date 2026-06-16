@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NeuroReadiness — Know when your mind is ready</title>
+<meta name="description" content="A short cognitive check combined with pulse and motion data estimates how ready you are for demanding mental work — and tells you how much to trust the reading." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/landing.css" />
+<!-- PWA: installable + offline. SW only registers over http/https, so the file:// demo is unaffected. -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="NeuroReadiness" />
+</head>
+<body>
+
+<!-- ============================ NAV ============================ -->
+<header class="nav" id="top">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="NeuroReadiness home">
+      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="#f5f7f9" stroke="rgba(20,184,166,0.4)"/><path d="M5 17 H11 l2-7 2.6 13 2.3-9 1.7 5 H27" stroke="#0d8a7d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="name">NeuroReadiness</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#measures">What it measures</a>
+      <a href="#cases">Use cases</a>
+      <a href="#science">Science</a>
+      <a href="#product">Product</a>
+    </nav>
+    <div class="nav-right">
+      <a class="nav-cta" href="sensor-setup.html">Run a test</a>
+      <button class="nav-burger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================ HERO ============================ -->
+<section class="hero" id="product">
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <span class="eyebrow reveal in">Performance · physiology · confidence</span>
+    <h1 class="hero-title reveal in d1">Know when your mind is ready.</h1>
+    <p class="hero-lede reveal in d2">A short cognitive check combined with pulse and motion data gives you a clearer picture of your attention, mental control and physiological load before the work that matters.</p>
+    <div class="hero-actions reveal in d3">
+      <a class="btn btn-primary btn-lg" href="sensor-setup.html">Run a readiness check</a>
+      <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
+    </div>
+    <p class="trust reveal in d4">
+      <svg class="lock" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.6" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" stroke-width="1.4"/></svg>
+      Private by default. Your sessions stay on your device.
+    </p>
+
+    <!-- product composition: results dashboard -->
+    <div class="hero-device reveal in d3">
+      <div class="dash" role="img" aria-label="NeuroReadiness results dashboard: readiness 78 out of 100, plus or minus 6 above the 14-day baseline; reaction time 284 milliseconds; working memory 84; cognitive control 81; physiological load 32 (low); data confidence 92, a trusted reading; resting pulse 64 bpm with good signal quality.">
+        <div class="dash-top">
+          <div>
+            <div class="dt-label">Readiness result</div>
+            <div class="dt-when">Today · 08:42 · finger mode</div>
+          </div>
+          <div class="conf-pill">
+            <span class="cdot"></span>
+            <span class="ctxt">CONFIDENCE</span>
+            <span class="cnum"><span data-count="92">92</span> · Trusted</span>
+          </div>
+        </div>
+        <div class="dash-body">
+          <div>
+            <div class="ring-wrap">
+              <div class="ring"><div class="ring-inner"><div class="rv" data-count="78">78</div><div class="rl">Readiness</div></div></div>
+            </div>
+            <div class="ring-cap"><div class="rc-big">Sharp</div><div class="rc-sub">+6 vs 14-day baseline</div></div>
+          </div>
+          <div class="metrics">
+            <div class="metric">
+              <div class="m-label">Reaction time</div>
+              <div class="m-value">284<span class="u">ms</span></div>
+              <svg class="m-spark" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,11 16,9 32,12 48,7 64,9 80,5 100,6" fill="none" stroke="#14b8a6" stroke-width="1.6"/></svg>
+            </div>
+            <div class="metric">
+              <div class="m-label">Working memory</div>
+              <div class="m-value">84</div>
+              <svg class="m-spark" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,12 16,10 32,8 48,9 64,6 80,7 100,4" fill="none" stroke="#14b8a6" stroke-width="1.6"/></svg>
+            </div>
+            <div class="metric">
+              <div class="m-label">Cognitive control</div>
+              <div class="m-value">81</div>
+              <svg class="m-spark" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,10 16,11 32,8 48,8 64,6 80,7 100,5" fill="none" stroke="#14b8a6" stroke-width="1.6"/></svg>
+            </div>
+            <div class="metric">
+              <div class="m-label">Physiological load</div>
+              <div class="m-value">32<span class="u">low</span></div>
+              <svg class="m-spark" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,7 16,8 32,6 48,9 64,8 80,10 100,9" fill="none" stroke="#2563eb" stroke-width="1.6"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="dash-trace">
+          <div class="tr-head"><span class="tr-label">Pulse · signal quality good</span><span class="tr-hr">64 bpm</span></div>
+          <svg viewBox="0 0 600 42" preserveAspectRatio="none" aria-hidden="true"><path d="M0,27 H70 l10,-2 8,4 7,-19 6,31 7,-16 6,4 10,-2 H180 l10,-2 8,4 7,-19 6,31 7,-16 6,4 10,-2 H290 l10,-2 8,4 7,-19 6,31 7,-16 6,4 10,-2 H400 l10,-2 8,4 7,-19 6,31 7,-16 6,4 10,-2 H510 l10,-2 8,4 7,-19 6,31 7,-16 6,4 10,-2 H600" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="hero-sensor">
+        <div class="ph" style="width:168px;height:80px;"><div class="ph-icon"></div><div class="ph-cap">wearable sensor</div></div>
+        <p class="ph-note">The sensor suite unlocks the full diagnostic. A simulated mode lets anyone explore the product first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== PRODUCT PROMISE ====================== -->
+<section class="promise alt">
+  <div class="wrap">
+    <div class="section-head promise-lede reveal">
+      <span class="eyebrow">The premise</span>
+      <h2 class="section-title">Readiness is more than how rested you feel.</h2>
+      <p>Sleep and recovery trackers infer readiness from <strong>passive body signals</strong> measured overnight. NeuroReadiness instead <strong>actively checks present cognitive performance</strong> with brief tasks, then combines it with live physiology — so the reading reflects how you are right now, not how last night went.</p>
+    <div class="outcomes">
+      <div class="outcome reveal d1">
+        <div class="o-num">01</div>
+        <h3>Check current performance</h3>
+        <p>A few minutes of reaction-time, inhibition and memory tasks measure where your attention and control actually sit today.</p>
+      </div>
+      <div class="outcome reveal d2">
+        <div class="o-num">02</div>
+        <h3>Understand what may be limiting it</h3>
+        <p>Pulse and motion signals add physiological context, so a dip reads as load or fatigue rather than an unexplained number.</p>
+      </div>
+      <div class="outcome reveal d3">
+        <div class="o-num">03</div>
+        <h3>Track changes against your own baseline</h3>
+        <p>Every result is expressed relative to your recent normal — the only honest frame for a personal performance signal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= HOW IT WORKS ======================= -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">How it works</span>
+      <h2 class="section-title">Three steps, a few minutes.</h2>
+      <p class="section-lede">Establish a reference, test your performance, then read the result with the confidence it deserves.</p>
+    </div>
+    <div class="steps">
+      <!-- 01 baseline -->
+      <div class="step reveal d1">
+        <div class="step-screen" aria-hidden="true">
+          <div class="mini-label">Resting capture · finger</div>
+          <svg class="mini-pulse" viewBox="0 0 260 60" preserveAspectRatio="none"><path d="M0,38 H50 l8,-2 6,3 5,-15 5,24 6,-13 5,3 8,-2 H140 l8,-2 6,3 5,-15 5,24 6,-13 5,3 8,-2 H230 l8,-2 6,3 5,-15 5,24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="qmeter">
+            <div class="qmeter-row"><span class="mini-label">Signal quality</span><span class="qmeter-val">88 · holding</span></div>
+            <div class="qmeter-track"><div class="qmeter-fill"></div></div>
+          </div>
+        </div>
+        <div class="step-meta"><span class="step-num">01</span><h3>Establish your baseline</h3></div>
+        <p>Capture a short resting pulse and signal-quality reading. The check won't start until the signal holds steady.</p>
+      </div>
+      <!-- 02 test -->
+      <div class="step reveal d2">
+        <div class="step-screen" aria-hidden="true">
+          <div class="mini-label">Cognitive task · inhibition</div>
+          <div class="stroop-mini">
+            <div class="stroop-word" style="color:#2563eb;">GREEN</div>
+            <div class="stroop-chips">
+              <div class="stroop-chip">Red</div>
+              <div class="stroop-chip on">Green</div>
+              <div class="stroop-chip">Blue</div>
+              <div class="stroop-chip">Yellow</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-meta"><span class="step-num">02</span><h3>Test cognitive performance</h3></div>
+        <p>Complete brief reaction-time, inhibition and working-memory tasks. Validated paradigms, no training required.</p>
+      </div>
+      <!-- 03 result -->
+      <div class="step reveal d3">
+        <div class="step-screen" aria-hidden="true">
+          <div class="mini-label">Result · interpreted</div>
+          <div class="result-mini">
+            <div class="rm-ring">
+              <div class="ring"><div class="ring-inner"><div class="rv">78</div><div class="rl">Ready</div></div></div>
+            </div>
+            <div class="rm-side">
+              <div class="rm-line"><span>Reaction</span><b>284 ms</b></div>
+              <div class="rm-line"><span>Load</span><b>32 low</b></div>
+              <div class="rm-line conf"><span>Confidence</span><b>92</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="step-meta"><span class="step-num">03</span><h3>Understand your result</h3></div>
+        <p>See performance, physiological load, and how much confidence to place in the reading — never a number on its own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHAT IT MEASURES ===================== -->
+<section class="measures alt" id="measures">
+  <div class="wrap">
+    <div class="section-head reveal" style="max-width:64ch;">
+      <span class="eyebrow">What it measures</span>
+      <h2 class="section-title">Performance and physiology, interpreted together.</h2>
+      <p class="section-lede">Two independent streams are captured at once, then read against each other to produce a single result you can act on.</p>
+    </div>
+
+    <div class="measure-stage reveal d1">
+      <!-- cognitive stream -->
+      <div class="stream cog">
+        <div class="stream-title"><span class="st-dot"></span><h3>Cognitive performance</h3></div>
+        <div class="stream-item">Reaction time<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,12 10,9 21,13 31,7 42,9" fill="none" stroke="#14b8a6" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">Attention lapses<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,8 10,10 21,7 31,11 42,8" fill="none" stroke="#14b8a6" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">Response inhibition<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,11 10,8 21,9 31,6 42,7" fill="none" stroke="#14b8a6" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">Working memory<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,12 10,9 21,8 31,7 42,5" fill="none" stroke="#14b8a6" stroke-width="1.5"/></svg></div>
+      </div>
+
+      <!-- converging core -->
+      <div class="measure-core">
+        <svg viewBox="0 0 380 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:360px;height:340px;max-width:none;z-index:1;pointer-events:none;overflow:visible;">
+          <path d="M10,70 C90,90 120,150 190,180" data-draw data-dur="900" stroke="#14b8a6" stroke-width="1.5" fill="none" opacity="0.55"/>
+          <path d="M10,130 C90,140 130,165 190,180" data-draw data-dur="900" data-delay="80" stroke="#14b8a6" stroke-width="1.5" fill="none" opacity="0.55"/>
+          <path d="M10,230 C90,220 130,195 190,180" data-draw data-dur="900" data-delay="160" stroke="#14b8a6" stroke-width="1.5" fill="none" opacity="0.55"/>
+          <path d="M10,290 C90,270 120,210 190,180" data-draw data-dur="900" data-delay="240" stroke="#14b8a6" stroke-width="1.5" fill="none" opacity="0.55"/>
+          <path d="M370,70 C290,90 260,150 190,180" data-draw data-dur="900" stroke="#2563eb" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <path d="M370,130 C290,140 250,165 190,180" data-draw data-dur="900" data-delay="80" stroke="#2563eb" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <path d="M370,230 C290,220 250,195 190,180" data-draw data-dur="900" data-delay="160" stroke="#2563eb" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <path d="M370,290 C290,270 260,210 190,180" data-draw data-dur="900" data-delay="240" stroke="#2563eb" stroke-width="1.5" fill="none" opacity="0.5"/>
+        </svg>
+        <div class="core-node">
+          <div>
+            <div class="cn-v">78</div>
+            <div class="cn-l">Readiness</div>
+          </div>
+        </div>
+        <div class="core-cap">One result, with a confidence score attached</div>
+      </div>
+
+      <!-- physiology stream -->
+      <div class="stream phys">
+        <div class="stream-title" style="justify-content:flex-end;"><h3>Peripheral physiology</h3><span class="st-dot"></span></div>
+        <div class="stream-item">Heart rate<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,9 10,9 16,4 21,14 27,8 42,9" fill="none" stroke="#2563eb" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">HRV / PRV proxy<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,8 10,11 21,7 31,10 42,8" fill="none" stroke="#2563eb" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">Perfusion<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,10 10,9 21,11 31,9 42,10" fill="none" stroke="#2563eb" stroke-width="1.5"/></svg></div>
+        <div class="stream-item">Motion &amp; signal quality<svg class="si-spark" viewBox="0 0 42 18" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,9 10,8 21,10 31,8 42,9" fill="none" stroke="#2563eb" stroke-width="1.5"/></svg></div>
+      </div>
+    </div>
+
+    <p class="measure-note reveal">These are <b>performance and physiological proxies</b> — reaction, pulse, motion. NeuroReadiness does not read brain activity, cerebral blood flow, or anything intracranial.</p>
+  </div>
+</section>
+
+<!-- ====================== DATA CONFIDENCE ====================== -->
+<section class="conf-section" id="confidence">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Data confidence · the signature</span>
+      <h2 class="section-title">A score is only useful when the signal deserves your trust.</h2>
+      <p class="section-lede">NeuroReadiness continuously checks perfusion, motion, beat regularity and task completion. When the data is weak, the interface <strong>lowers its confidence</strong> instead of presenting false certainty.</p>
+    </div>
+
+    <div class="conf-compare">
+      <!-- clean -->
+      <div class="conf-card clean reveal d1">
+        <div class="conf-card-head">
+          <span class="cc-state"><svg class="cc-ico" viewBox="0 0 22 22" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 11.5l3 3L15.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Clean signal</span>
+          <div class="cc-conf"><div class="ccv">92</div><div class="ccl">Confidence</div></div>
+        </div>
+        <div class="cc-trace"><svg viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><path d="M0,40 H40 l7,-2 5,3 5,-22 5,34 5,-18 5,5 8,-2 H110 l7,-2 5,3 5,-22 5,34 5,-18 5,5 8,-2 H190 l7,-2 5,3 5,-22 5,34 5,-18 5,5 8,-2 H270 l7,-2 5,3 5,-22 5,34" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="cc-verdict"><span class="v-badge">Trusted</span><p>Beat regularity, perfusion and stillness all check out. Read the result at face value.</p></div>
+      </div>
+      <!-- dirty -->
+      <div class="conf-card dirty reveal d2">
+        <div class="conf-card-head">
+          <span class="cc-state"><svg class="cc-ico" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 2 1.5 19h19L11 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 8.5v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="16" r=".9" fill="currentColor"/></svg>Motion-corrupted</span>
+          <div class="cc-conf"><div class="ccv">38</div><div class="ccl">Confidence</div></div>
+        </div>
+        <div class="cc-trace"><svg viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"><path d="M0,32 6,18 12,44 18,14 24,50 30,22 36,40 42,12 48,52 54,28 60,46 66,16 72,38 78,48 84,20 90,42 96,14 102,50 108,30 114,44 120,18 126,46 132,24 138,52 144,16 150,40 156,48 162,22 168,44 174,14 180,50 186,28 192,42 198,18 204,46 210,24 216,50 222,16 228,40 234,48 240,20 246,44 252,14 258,52 264,30 270,42 276,18 282,46 288,24 294,48 300,20" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="cc-verdict"><span class="v-badge">Interpret cautiously</span><p>Movement is breaking the pulse waveform. The reading is shown, but trust it less and re-run when still.</p></div>
+      </div>
+    </div>
+
+    <!-- live signal demo -->
+    <div class="signal-demo reveal">
+      <div class="signal-demo-top">
+        <div>
+          <h3>Watch the confidence respond</h3>
+          <p>Same person, same test — only the signal quality changes.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Signal condition">
+          <button data-state="clean" class="on" aria-pressed="true">Still</button>
+          <button data-state="motion" aria-pressed="false">Moving</button>
+        </div>
+      </div>
+      <div class="signal-meter-wrap">
+        <div class="signal-readout"><span class="sr-num">92</span><span class="sr-lbl">Confidence</span></div>
+        <div class="signal-bar">
+          <div class="signal-bar-track"><div class="signal-bar-fill" style="width:92%;"></div></div>
+          <div class="signal-verdict"><svg class="sv-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sv-txt">Trusted reading — signal quality is high.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= USE CASES ========================= -->
+<section class="cases-section alt" id="cases">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Use cases</span>
+      <h2 class="section-title">Built for moments when mental performance matters.</h2>
+      <p class="section-lede">NeuroReadiness measures and tracks performance. It doesn't claim to improve it — that part is up to you.</p>
+    </div>
+    <div class="cases">
+      <article class="case reveal d1">
+        <div class="case-top">
+          <span class="case-idx">A</span>
+          <svg class="case-glyph" viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="7" cy="8" r="2.4" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="7" r="2.4" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="22" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l5 11M20 9l-5 11" stroke="currentColor" stroke-width="1.3"/></svg>
+        </div>
+        <h3>Researchers</h3>
+        <p>Run time-aligned cognitive and sensor sessions, inspect transparent scoring, and export structured data for your own analysis.</p>
+        <div class="case-tag">CSV export · time-aligned events</div>
+      </article>
+      <article class="case reveal d2">
+        <div class="case-top">
+          <span class="case-idx">B</span>
+          <svg class="case-glyph" viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="11" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="15" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="15" r="1.6" fill="currentColor"/></svg>
+        </div>
+        <h3>Gamers &amp; esports players</h3>
+        <p>Check attention and reaction consistency before competitive matches or extended play, and see when fatigue is setting in.</p>
+        <div class="case-tag">Reaction consistency · pre-session</div>
+      </article>
+      <article class="case reveal d3">
+        <div class="case-top">
+          <span class="case-idx">C</span>
+          <svg class="case-glyph" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M5 9V5h4M25 9V5h-4M5 21v4h4M25 21v4h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="12" y="12" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+        <h3>Knowledge workers</h3>
+        <p>Measure readiness before focused work, difficult decisions, examinations, or a high-stakes presentation — and plan the day around it.</p>
+        <div class="case-tag">Focus windows · decision timing</div>
+      </article>
+      <article class="case reveal d4">
+        <div class="case-top">
+          <span class="case-idx">D</span>
+          <svg class="case-glyph" viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M4 21l7-7 4 4 9-10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 8h5v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Athletes &amp; recovery tracking</h3>
+        <p>Compare mental performance after training, poor sleep, travel, or recovery sessions, and watch how it returns to your baseline.</p>
+        <div class="case-tag">Post-training · baseline return</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PERSONAL TRENDS ======================= -->
+<section class="trends" id="trends">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Personal trends</span>
+      <h2 class="section-title">Your baseline matters more than a universal score.</h2>
+      <p class="section-lede">A rolling 14-day baseline turns each reading into "above or below my own normal." The picture gets sharper the more consistently you record.</p>
+    </div>
+
+    <div class="trends-stage">
+      <!-- chart panel -->
+      <div class="trend-panel reveal d1">
+        <div class="trend-panel-head">
+          <h3>Trend</h3>
+          <div class="trend-tabs" role="tablist" aria-label="Trend metric">
+            <button class="trend-tab on" data-metric="readiness" role="tab" aria-selected="true">Readiness</button>
+            <button class="trend-tab" data-metric="reaction" role="tab" aria-selected="false">Reaction time</button>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span><span class="lg-line"></span>Session</span>
+          <span><span class="lg-band"></span>Your 14-day baseline</span>
+        </div>
+        <svg class="trend-chart" viewBox="0 0 560 248" role="img" aria-label="Line chart of recent sessions against a shaded 14-day personal baseline band. The readiness trend rises gently above baseline over the last ten sessions.">
+          <!-- gridlines -->
+          <g aria-hidden="true">
+            <line class="grid-line" x1="36" y1="16" x2="544" y2="16"/>
+            <line class="grid-line" x1="36" y1="65" x2="544" y2="65"/>
+            <line class="grid-line" x1="36" y1="114" x2="544" y2="114"/>
+            <line class="grid-line" x1="36" y1="163" x2="544" y2="163"/>
+            <line class="grid-line" x1="36" y1="212" x2="544" y2="212"/>
+          </g>
+          <!-- readiness series -->
+          <g data-series="readiness" data-dots>
+            <rect class="band" x="36" y="67" width="508" height="13" rx="2"/>
+            <line class="baseline" x1="36" y1="72.8" x2="544" y2="72.8"/>
+            <path class="series" data-draw data-dur="1200" d="M44,78.7 L100,72.8 L156,86.6 L211,68.9 L267,74.8 L322,63 L378,70.9 L433,57.2 L489,67 L540,59.1"/>
+            <g>
+              <circle class="dot" cx="44" cy="78.7" r="3.4"/><circle class="dot" cx="100" cy="72.8" r="3.4"/><circle class="dot" cx="156" cy="86.6" r="3.4"/><circle class="dot" cx="211" cy="68.9" r="3.4"/><circle class="dot" cx="267" cy="74.8" r="3.4"/><circle class="dot" cx="322" cy="63" r="3.4"/><circle class="dot" cx="378" cy="70.9" r="3.4"/><circle class="dot" cx="433" cy="57.2" r="3.4"/><circle class="dot" cx="489" cy="67" r="3.4"/><circle class="dot" cx="540" cy="59.1" r="4.2"/>
+            </g>
+          </g>
+          <!-- reaction series (hidden until tab) -->
+          <g data-series="reaction" data-dots style="display:none;">
+            <rect class="band" x="36" y="94" width="508" height="40" rx="2"/>
+            <line class="baseline" x1="36" y1="114" x2="544" y2="114"/>
+            <path class="series" data-draw data-dur="1200" d="M44,138.5 L100,118.9 L156,163 L211,109.1 L267,126.25 L322,84.6 L378,114 L433,69.9 L489,99.3 L540,79.7"/>
+            <g>
+              <circle class="dot" cx="44" cy="138.5" r="3.4"/><circle class="dot" cx="100" cy="118.9" r="3.4"/><circle class="dot" cx="156" cy="163" r="3.4"/><circle class="dot" cx="211" cy="109.1" r="3.4"/><circle class="dot" cx="267" cy="126.25" r="3.4"/><circle class="dot" cx="322" cy="84.6" r="3.4"/><circle class="dot" cx="378" cy="114" r="3.4"/><circle class="dot" cx="433" cy="69.9" r="3.4"/><circle class="dot" cx="489" cy="99.3" r="3.4"/><circle class="dot" cx="540" cy="79.7" r="4.2"/>
+            </g>
+          </g>
+          <!-- x labels -->
+          <g aria-hidden="true">
+            <text class="axis-txt" x="44" y="238" text-anchor="middle">Jun 3</text>
+            <text class="axis-txt" x="211" y="238" text-anchor="middle">Jun 7</text>
+            <text class="axis-txt" x="378" y="238" text-anchor="middle">Jun 11</text>
+            <text class="axis-txt" x="540" y="238" text-anchor="end">Today</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- side: tags + insight -->
+      <div class="trend-side">
+        <div class="trend-card reveal d2">
+          <h4>Context tags</h4>
+          <div class="tag-cloud">
+            <span class="tag on"><span class="td"></span>Slept well</span>
+            <span class="tag"><span class="td"></span>Poor sleep</span>
+            <span class="tag on"><span class="td"></span>Caffeine</span>
+            <span class="tag"><span class="td"></span>Post-workout</span>
+            <span class="tag"><span class="td"></span>Stressed</span>
+          </div>
+        </div>
+        <div class="insight reveal d3">
+          <div class="ins-label">Insight <span class="ins-tag">Illustrative</span></div>
+          <p>"Reaction time has been slower than your recent baseline after poor-sleep sessions."</p>
+          <p class="ins-foot">Insights like this become more reliable as you record consistent sessions over time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SCIENCE & TRANSPARENCY ==================== -->
+<section class="science alt" id="science">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Science &amp; transparency</span>
+      <h2 class="section-title">Built to show its reasoning.</h2>
+    </div>
+    <div class="science-grid">
+      <div class="method-list reveal d1">
+        <div class="method">
+          <div class="method-top"><span class="method-abbr">PVT</span><h3>Psychomotor Vigilance Task</h3></div>
+          <p>A sustained-attention reaction test — the gold-standard measure of how alert and vigilant you are right now.</p>
+        </div>
+        <div class="method">
+          <div class="method-top"><span class="method-abbr">Stroop</span><h3>Colour-word interference</h3></div>
+          <p>Name the ink colour, not the word. Measures cognitive control — your ability to inhibit an automatic response.</p>
+        </div>
+        <div class="method">
+          <div class="method-top"><span class="method-abbr">2-back</span><h3>Working-memory updating</h3></div>
+          <p>Track whether the current item matches the one two steps back. Indexes how much you can hold and update at once.</p>
+        </div>
+      </div>
+      <div class="science-aside reveal d2">
+        <p class="sci-lede">The cognitive paradigms are validated. The <strong>0–100 scores are transparent heuristics</strong> meant for comparison against your own sessions — not population diagnosis.</p>
+        <a class="link-arrow" href="app.html#/faq">Explore the methodology <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="not-medical">
+          <div class="nm-h"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".8" fill="currentColor"/></svg>Important</div>
+          <p>Not a medical device. Does not diagnose conditions, or measure brain activity or cerebral blood flow.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FINAL CTA ========================= -->
+<section class="final-cta" id="cta">
+  <div class="final-grid-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <h2 class="reveal">Check before the work that matters.</h2>
+    <p class="reveal d1">Build a personal picture of when you are sharp, strained, or still recovering.</p>
+    <div class="final-actions reveal d2">
+      <a class="btn btn-primary btn-lg" href="sensor-setup.html">Run a readiness check</a>
+      <a class="btn btn-ghost btn-lg" href="#science">Explore the methodology</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ========================== FOOTER ========================== -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="NeuroReadiness home">
+          <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="#f5f7f9" stroke="rgba(20,184,166,0.4)"/><path d="M5 17 H11 l2-7 2.6 13 2.3-9 1.7 5 H27" stroke="#0d8a7d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="name">NeuroReadiness</span>
+        </a>
+        <p>A cognitive-performance and peripheral-physiology tool that estimates how ready you are for demanding mental work — honestly.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="sensor-setup.html">Run a test</a>
+          <a href="app.html#/faq">Methodology</a>
+          <a href="#confidence">Data confidence</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/amankhashbar/neuroreadiness#readme">Documentation</a>
+          <a href="https://github.com/amankhashbar/neuroreadiness">GitHub</a>
+          <a href="app.html#/faq">Privacy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="fb-note"><span class="nm-pill">Not a medical device</span>Performance &amp; physiology proxies only. Not for diagnosis.</span>
+      <span class="fb-note">© 2026 NeuroReadiness</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/landing.js"></script>
+
+<!-- PWA service worker. Only registers over http/https (a secure context),
+     so the file:// double-click demo is unaffected. -->
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function (e) {
+        console.warn("[NR] service worker registration failed", e);
+      });
+    });
+  }
+</script>
+</body>
+</html>
