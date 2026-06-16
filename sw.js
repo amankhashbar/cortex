@@ -11,7 +11,7 @@
      still renders offline after the first online visit.
    Bump CACHE on any shell change to retire the old cache.
    ============================================================= */
-const CACHE = "nr-shell-v6";
+const CACHE = "nr-shell-v7";
 
 // Paths are relative to the SW scope, so this works under a Pages subpath.
 const SHELL = [
@@ -21,6 +21,7 @@ const SHELL = [
   "./app.html",        // the instrument app
   "./manifest.webmanifest",
   "./css/landing.css",
+  "./css/landing.v6.css",
   "./js/landing.js",
   "./css/styles.css",
   "./js/util.js",
