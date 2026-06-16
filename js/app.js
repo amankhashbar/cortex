@@ -93,7 +93,7 @@
       ctx.clearRect(0, 0, w, h);
 
       // Grid.
-      ctx.strokeStyle = "rgba(255,255,255,0.05)";
+      ctx.strokeStyle = "rgba(12,17,22,0.055)";
       ctx.lineWidth = 1 * dpr;
       for (let x = 0; x < w; x += 36 * dpr) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
       for (let y = 0; y < h; y += 36 * dpr) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
@@ -104,7 +104,7 @@
         // Colour follows confidence: teal when trusted, amber when shaky.
         const q = ppg.quality;
         const trusted = q >= 55;
-        ctx.strokeStyle = trusted ? "#2dd4bf" : "#f5a524";
+        ctx.strokeStyle = trusted ? "#0d8a7d" : "#d97706";
         ctx.lineWidth = 2 * dpr;
         ctx.beginPath();
         for (let i = 0; i < data.length; i++) {
@@ -114,7 +114,7 @@
         }
         ctx.stroke();
         // Soft glow.
-        ctx.shadowColor = trusted ? "rgba(45,212,191,0.5)" : "rgba(245,165,36,0.5)";
+        ctx.shadowColor = trusted ? "rgba(13,138,125,0.28)" : "rgba(217,119,6,0.30)";
         ctx.shadowBlur = 8 * dpr;
         ctx.stroke();
         ctx.shadowBlur = 0;
@@ -207,19 +207,19 @@
       <svg viewBox="0 0 240 140" class="placement-svg" aria-hidden="true">
         <rect x="66" y="92" width="108" height="30" rx="8" fill="none" stroke="var(--teal)" stroke-width="2"/>
         <circle cx="98" cy="107" r="5" fill="var(--red)"/>
-        <circle cx="120" cy="107" r="5" fill="#c0494d"/>
+        <circle cx="120" cy="107" r="5" fill="var(--red)"/>
         <circle cx="142" cy="107" r="5" fill="var(--teal)"/>
-        <path d="M84 86 q4 -54 56 -54 q34 0 34 30 q0 14 -8 24" fill="rgba(255,255,255,0.04)" stroke="var(--muted)" stroke-width="2"/>
+        <path d="M84 86 q4 -54 56 -54 q34 0 34 30 q0 14 -8 24" fill="rgba(12,17,22,0.035)" stroke="var(--muted)" stroke-width="2"/>
         <path d="M84 86 q56 16 82 0" fill="none" stroke="var(--muted)" stroke-width="2"/>
       </svg>`;
     const templeSVG = `
       <svg viewBox="0 0 240 150" class="placement-svg" aria-hidden="true">
-        <path d="M168 26 q-78 -6 -86 64 q-4 30 18 46 q12 8 9 20" fill="rgba(255,255,255,0.04)" stroke="var(--muted)" stroke-width="2"/>
+        <path d="M168 26 q-78 -6 -86 64 q-4 30 18 46 q12 8 9 20" fill="rgba(12,17,22,0.035)" stroke="var(--muted)" stroke-width="2"/>
         <path d="M92 100 q-13 2 -11 17 q2 10 13 8" fill="none" stroke="var(--muted)" stroke-width="2"/>
         <rect x="96" y="52" width="32" height="24" rx="6" fill="none" stroke="var(--teal)" stroke-width="2"/>
         <circle cx="108" cy="64" r="3.5" fill="var(--red)"/>
         <circle cx="118" cy="64" r="3.5" fill="var(--teal)"/>
-        <path d="M96 58 q-46 -18 -2 -44" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 3"/>
+        <path d="M96 58 q-46 -18 -2 -44" fill="none" stroke="var(--blue)" stroke-width="2" stroke-dasharray="5 3"/>
       </svg>`;
     const steps = mode === "temple"
       ? ["Sit the sensor flat against your temple, just above the cheekbone.",
@@ -261,7 +261,7 @@
     const tick = () => {
       label.textContent = remaining;
       const pct = ((secs - remaining) / secs) * 100;
-      ring.style.background = `conic-gradient(#2dd4bf ${pct}%, rgba(255,255,255,0.08) ${pct}%)`;
+      ring.style.background = `conic-gradient(#0d8a7d ${pct}%, #eef2f5 ${pct}%)`;
       if (remaining <= 0) {
         clearInterval(baselineTimer);
         finishBaseline();
