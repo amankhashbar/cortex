@@ -1,181 +1,155 @@
-/* NeuroReadiness landing — interactions
-   Visibility-critical reveals use a scroll-position check (not
-   IntersectionObserver) with a hard fallback, so content is never
-   left invisible if observers/raf are throttled. Respects reduced-motion.
-*/
+/* =============================================================
+   Cortex — landing.js
+   Dependency-free landing-page motion: scroll reveals, score-ring
+   draw-in, number count-ups, the live PPG waveform, hero parallax,
+   and the floating-nav scroll state. Vanilla JS + canvas + SVG only,
+   to match the no-build-step architecture. Every animation has a
+   reduced-motion fallback that serves the static end-state.
+   ============================================================= */
 (function () {
   "use strict";
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---- sticky nav shadow ---- */
-  var nav = document.querySelector(".nav");
-  function onNav() {
-    if (window.scrollY > 8) nav.classList.add("scrolled");
-    else nav.classList.remove("scrolled");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var raf = [];
+  var $ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+
+  // ---- Score ring: animate stroke-dashoffset to the data-ring value -------
+  function animRing(el) {
+    var pct = parseFloat(el.getAttribute("data-ring")) / 100;
+    var target = 326.7 * (1 - pct);
+    if (reduced) { el.style.strokeDashoffset = String(target); return; }
+    el.style.transition = "stroke-dashoffset 1.1s cubic-bezier(.16,1,.3,1)";
+    requestAnimationFrame(function () { el.style.strokeDashoffset = String(target); });
   }
 
-  /* ---- mobile menu ---- */
-  var burger = document.querySelector(".nav-burger");
-  var links = document.querySelector(".nav-links");
-  if (burger) {
-    burger.addEventListener("click", function () {
-      var open = links.classList.toggle("open");
-      burger.setAttribute("aria-expanded", open ? "true" : "false");
-      links.style.display = open ? "flex" : "";
-    });
-    links.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", function () {
-        if (window.innerWidth <= 920) { links.classList.remove("open"); links.style.display = ""; burger.setAttribute("aria-expanded", "false"); }
-      });
-    });
-  }
-
-  /* ---- scroll-driven enhancement engine (fail-visible) ----
-     Everything is visible by default in CSS. These only ADD animation when
-     an element scrolls into view; if they never fire, content still shows. */
-  var pending = [];
-  function register(el, fire) { pending.push({ el: el, fire: fire }); }
-
-  function isInView(el) {
-    var r = el.getBoundingClientRect();
-    var vh = window.innerHeight || document.documentElement.clientHeight;
-    return r.top < vh * 0.9 && r.bottom > 0;
-  }
-
-  var ticking = false;
-  function check() {
-    ticking = false;
-    onNav();
-    if (!pending.length) return;
-    var still = [];
-    for (var i = 0; i < pending.length; i++) {
-      var p = pending[i];
-      if (isInView(p.el)) { try { p.fire(p.el); } catch (e) {} }
-      else still.push(p);
-    }
-    pending = still;
-  }
-  // setTimeout throttle (NOT rAF — rAF can be throttled in background frames)
-  function requestCheck() {
-    if (ticking) return;
-    ticking = true;
-    setTimeout(check, 16);
-  }
-  window.addEventListener("scroll", requestCheck, { passive: true });
-  window.addEventListener("resize", requestCheck, { passive: true });
-
-  /* ---- draw-in paths (visible by default; animate when scrolled in) ---- */
-  function drawPath(p) {
-    if (reduceMotion) return; // already visible
-    try {
-      var len = p.getTotalLength();
-      var dur = parseInt(p.getAttribute("data-dur") || "1100", 10);
-      var delay = parseInt(p.getAttribute("data-delay") || "0", 10);
-      p.style.transition = "none";
-      p.style.strokeDasharray = len;
-      p.style.strokeDashoffset = len;
-      p.getBoundingClientRect(); // reflow
-      p.style.transition = "stroke-dashoffset " + dur + "ms cubic-bezier(.33,.1,.25,1) " + delay + "ms";
-      setTimeout(function () { p.style.strokeDashoffset = 0; }, 20);
-    } catch (e) {}
-  }
-  document.querySelectorAll("[data-draw]").forEach(function (p) { register(p, drawPath); });
-
-  /* ---- chart dots fade-in (visible by default) ---- */
-  document.querySelectorAll("[data-dots]").forEach(function (g) {
-    register(g, function (group) {
-      if (reduceMotion) return;
-      group.querySelectorAll(".dot").forEach(function (d, i) {
-        d.style.transition = "none";
-        d.style.opacity = "0";
-        d.getBoundingClientRect();
-        d.style.transition = "opacity .3s ease " + (450 + i * 70) + "ms";
-        setTimeout(function () { d.style.opacity = "1"; }, 20);
-      });
-    });
-  });
-
-  /* ---- count-up (final value is already in the HTML as fallback) ---- */
-  function countUp(el) {
-    var to = parseInt(el.getAttribute("data-count"), 10);
-    if (reduceMotion || isNaN(to)) { return; }
-    var dur = 1100, start = Date.now();
-    function tick() {
-      var t = Math.min(1, (Date.now() - start) / dur);
-      var eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = Math.round(to * eased);
-      if (t < 1) setTimeout(tick, 32);
-    }
-    tick();
-  }
-  document.querySelectorAll("[data-count]").forEach(function (el) { register(el, countUp); });
-
-  /* ---- signal-quality clean/motion demo ---- */
-  var demo = document.querySelector(".signal-demo");
-  if (demo) {
-    var fill = demo.querySelector(".signal-bar-fill");
-    var num = demo.querySelector(".sr-num");
-    var verdict = demo.querySelector(".signal-verdict .sv-txt");
-    var svIco = demo.querySelector(".signal-verdict .sv-ico");
-    var btns = demo.querySelectorAll(".seg button");
-    var states = {
-      clean: { v: 92, w: "92%", verdict: "Trusted reading — signal quality is high.", uncertain: false },
-      motion: { v: 38, w: "38%", verdict: "Interpret cautiously — motion is corrupting the signal.", uncertain: true }
+  // ---- Count-up: ease a number from 0 to data-countup -----------------------
+  function animCount(el) {
+    var target = parseFloat(el.getAttribute("data-countup"));
+    if (reduced) { el.textContent = String(target); return; }
+    var dur = 900, t0 = performance.now();
+    var step = function (now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e);
+      if (p < 1) raf.push(requestAnimationFrame(step));
     };
-    function animateNum(el, from, to, dur) {
-      if (reduceMotion) { el.textContent = to; return; }
-      var start = Date.now();
-      function tick() {
-        var t = Math.min(1, (Date.now() - start) / dur);
-        var eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = Math.round(from + (to - from) * eased);
-        if (t < 1) setTimeout(tick, 32);
-      }
-      tick();
+    raf.push(requestAnimationFrame(step));
+  }
+
+  // ---- Live PPG-style waveform on a canvas ---------------------------------
+  function drawWave(canvas, phase, teal) {
+    var ctx = canvas.getContext("2d");
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    var grad = ctx.createLinearGradient(0, 0, W, 0);
+    if (teal) { grad.addColorStop(0, "rgba(45,212,191,0.15)"); grad.addColorStop(1, "#2DD4BF"); }
+    else { grad.addColorStop(0, "rgba(59,130,246,0.15)"); grad.addColorStop(1, "#3B82F6"); }
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    var mid = H * 0.55, beat = 78;
+    for (var x = 0; x <= W; x += 2) {
+      var t = (x + phase) % beat;
+      var y = mid + Math.sin((x + phase) * 0.05) * 4;
+      var u = t / beat;
+      if (u < 0.18) y -= Math.sin(u / 0.18 * Math.PI) * (H * 0.32);
+      else if (u < 0.30) y += Math.sin((u - 0.18) / 0.12 * Math.PI) * (H * 0.12);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    function setState(key) {
-      var s = states[key];
-      fill.style.width = s.w;
-      demo.classList.toggle("is-uncertain", s.uncertain);
-      animateNum(num, parseInt(num.textContent, 10) || 0, s.v, 600);
-      verdict.textContent = s.verdict;
-      svIco.innerHTML = s.uncertain
-        ? '<path d="M8 1.5 1 14h14L8 1.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="12" r=".7" fill="currentColor"/>'
-        : '<path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
-      btns.forEach(function (b) {
-        var on = b.getAttribute("data-state") === key;
-        b.classList.toggle("on", on);
-        b.setAttribute("aria-pressed", on ? "true" : "false");
-      });
-    }
-    btns.forEach(function (b) {
-      b.addEventListener("click", function () { setState(b.getAttribute("data-state")); });
+    ctx.stroke();
+  }
+
+  function initWaveforms() {
+    $("canvas[data-waveform]").forEach(function (canvas) {
+      var teal = canvas.getAttribute("data-waveform") === "teal";
+      drawWave(canvas, 0, teal);            // static frame first, always visible
+      if (reduced) return;
+      var phase = 0;
+      var tick = function () { phase += 1.1; drawWave(canvas, phase, teal); raf.push(requestAnimationFrame(tick)); };
+      raf.push(requestAnimationFrame(tick));
     });
   }
 
-  /* ---- trends metric tabs ---- */
-  var trendTabs = document.querySelectorAll(".trend-tab");
-  var trendSeries = document.querySelectorAll("[data-series]");
-  trendTabs.forEach(function (tab) {
-    tab.addEventListener("click", function () {
-      var key = tab.getAttribute("data-metric");
-      trendTabs.forEach(function (t) { t.classList.toggle("on", t === tab); t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
-      trendSeries.forEach(function (g) {
-        var show = g.getAttribute("data-series") === key;
-        g.style.display = show ? "" : "none";
-        if (show) {
-          // (re)draw the now-visible series if it's in view
-          // (drawPath already resets dasharray/offset before animating)
-          var path = g.querySelector("[data-draw]");
-          if (path && isInView(g)) { drawPath(path); }
-        }
+  // ---- Scroll reveals + ring/count triggers --------------------------------
+  function initReveals() {
+    var els = $("[data-reveal]");
+    var show = function (el) {
+      var delay = parseInt(el.getAttribute("data-reveal-delay") || "0", 10);
+      setTimeout(function () { el.classList.add("in"); }, reduced ? 0 : delay);
+    };
+    if (reduced || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("in"); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          show(e.target); io.unobserve(e.target);
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+      els.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) show(el);
+        else io.observe(el);
       });
-    });
-  });
+      // Safety net: never leave content hidden if IO is throttled.
+      setTimeout(function () { els.forEach(function (el) { el.classList.add("in"); }); }, 2500);
+    }
 
-  /* ---- kick off ---- */
-  onNav();
-  check();
-  setTimeout(check, 120);
-  window.addEventListener("load", function () { setTimeout(check, 60); });
+    // rings + countups fire on their own visibility
+    var trigList = $("[data-ring],[data-countup]");
+    if (reduced || !("IntersectionObserver" in window)) {
+      trigList.forEach(function (el) {
+        if (el.hasAttribute("data-ring")) animRing(el);
+        if (el.hasAttribute("data-countup")) animCount(el);
+      });
+      return;
+    }
+    var trig = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        if (e.target.hasAttribute("data-ring")) animRing(e.target);
+        if (e.target.hasAttribute("data-countup")) animCount(e.target);
+        trig.unobserve(e.target);
+      });
+    }, { threshold: 0.4 });
+    trigList.forEach(function (el) { trig.observe(el); });
+  }
+
+  // ---- Hero parallax (subtle translateY on the floating board) -------------
+  function initParallax() {
+    if (reduced) return;
+    var layers = $("[data-cx-parallax]");
+    if (!layers.length) return;
+    var onScroll = function () {
+      var y = window.scrollY;
+      layers.forEach(function (el) {
+        var sp = parseFloat(el.getAttribute("data-cx-parallax")) || 0.15;
+        el.style.transform = "translateY(" + (y * sp) + "px)";
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  // ---- Floating nav: shrink + gain opacity on scroll -----------------------
+  function initNav() {
+    var nav = document.querySelector("[data-cx-nav]");
+    if (!nav) return;
+    var onScroll = function () {
+      var s = window.scrollY > 30;
+      nav.style.padding = s ? "8px 12px 8px 18px" : "11px 14px 11px 20px";
+      nav.style.background = s ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.6)";
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  function start() {
+    initReveals();
+    initWaveforms();
+    initParallax();
+    initNav();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();

@@ -159,6 +159,26 @@
       return Math.round(parts.reduce((a, p) => a + p.v * p.w, 0) / wsum);
     },
 
+    // The consumer-facing headline. Same transparent blend as composite()
+    // (Focus 0.4 · Control 0.3 · Memory 0.3 — Load & Confidence stay OUT of
+    // it), but returns {value, why, trust} so the UI can present it honestly.
+    // `trust` mirrors data confidence: a low reading does NOT change the value
+    // — it tells you how much to believe it (surfaced as the amber chip). This
+    // keeps the number comparable across sessions while honoring the gate.
+    cortexScore(s) {
+      const value = this.composite(s);
+      if (!isFinite(value)) return { value: NaN, why: "no cognitive data yet", trust: NaN };
+      const conf = s && s.dataConfidence && s.dataConfidence.value;
+      const trust = isFinite(conf) ? conf : NaN;
+      const lowTrust = isFinite(trust) && trust < 40;
+      return {
+        value,
+        why: "Focus, Control and Memory, weighted 0.4 / 0.3 / 0.3" +
+          (lowTrust ? " — low signal confidence, read as indicative only" : ""),
+        trust,
+      };
+    },
+
     compute({ pvt, stroop, nback, baselinePPG, taskPPG, baselineGSR, taskGSR, quality, cleanFraction, taskCompletion, mode }) {
       const scores = {
         alertness: alertness(pvt),

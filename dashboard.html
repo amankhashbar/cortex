@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cortex — Dashboard</title>
+<meta name="description" content="Your Cortex home base: today's readiness, your metric trends against your own baseline, and the rest of the platform." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/cortex.css" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#E9ECF0" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+<style>
+  .dash-body { padding: 104px 0 80px; min-height: 100vh; background:
+    radial-gradient(900px 540px at 82% -8%, rgba(45,212,191,0.10), transparent 60%), var(--bg); }
+  .dash-nav-links { display: flex; align-items: center; gap: 6px; }
+  .dash-nav-links a { text-decoration: none; color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-pill); transition: background var(--dur-base), color var(--dur-base); }
+  .dash-nav-links a:hover { background: rgba(0,0,0,0.04); color: var(--ink); }
+  .dash-nav-links a.active { background: var(--teal-dim); color: var(--teal-text); }
+  .acct-chip { display: inline-flex; align-items: center; gap: 9px; padding: 6px 8px 6px 6px; border-radius: var(--r-pill); border: 1px solid var(--line); background: rgba(255,255,255,0.6); cursor: pointer; }
+  .acct-chip .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: var(--ink-on-accent); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+  .acct-chip .nm { font-size: 13px; font-weight: 600; color: var(--ink); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-menu { position: absolute; right: 0; top: 46px; min-width: 220px; padding: 8px; z-index: 30; }
+  .acct-menu .head { padding: 8px 10px 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .acct-menu .sub { padding: 0 10px 8px; font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--line); margin-bottom: 6px; word-break: break-all; }
+  .acct-menu button, .acct-menu a { display: block; width: 100%; text-align: left; background: none; border: none; padding: 9px 10px; border-radius: 8px; font-size: 14px; color: var(--ink); cursor: pointer; text-decoration: none; }
+  .acct-menu button:hover, .acct-menu a:hover { background: rgba(0,0,0,0.04); }
+  .dash-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .greeting { font-family: var(--font-display); font-weight: 600; font-size: clamp(24px,4vw,34px); letter-spacing: -0.02em; margin: 0; }
+  .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .metric-card { padding: 18px; position: relative; }
+  .metric-card .mc-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .metric-card .mc-name { font-family: var(--font-display); font-weight: 600; font-size: 15px; }
+  .metric-card .mc-val { font-family: var(--font-mono); font-weight: 600; font-size: 26px; color: var(--ink); }
+  .metric-card .mc-delta { font-size: 12px; font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
+  .metric-card .mc-spark { width: 100%; height: 40px; margin-top: 10px; display: block; }
+  .metric-card.ghost { opacity: 0.55; }
+  .prompt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .prompt-card { padding: 22px; text-decoration: none; color: inherit; display: block; transition: transform var(--dur-base), box-shadow var(--dur-base); border: 1px solid var(--line); }
+  .prompt-card:hover { transform: translateY(-2px); box-shadow: var(--elev-float); }
+  .prompt-card .pc-ic { font-size: 22px; }
+  .prompt-card .pc-title { font-family: var(--font-display); font-weight: 600; font-size: 17px; margin: 10px 0 4px; }
+  .prompt-card .pc-sub { font-size: 13px; color: var(--ink-2); line-height: 1.45; }
+  .pillar-stub { text-align: center; padding: 80px 24px; }
+  .pillar-stub .badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet-text); background: var(--violet-dim); border: 1px solid var(--violet-line); padding: 6px 12px; border-radius: var(--r-pill); margin-bottom: 18px; }
+  @media (max-width: 760px) {
+    .dash-nav-links { display: none; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .prompt-grid { grid-template-columns: 1fr; }
+    .acct-chip .nm { display: none; }
+  }
+  @media (max-width: 420px) { .metric-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="cx">
+<nav data-cx-nav class="cx-nav">
+  <a class="cx-brand" href="#/home"><span class="node"></span><span class="wordmark">Cortex</span></a>
+  <div class="dash-nav-links" id="dash-nav">
+    <a href="#/home" data-route="home">Home</a>
+    <a href="#/trends" data-route="trends">Trends</a>
+    <a href="#/activities" data-route="activities">Activities</a>
+    <a href="#/journal" data-route="journal">Journal</a>
+    <a href="#/compete" data-route="compete">Compete</a>
+  </div>
+  <div class="cx-nav-right" style="position:relative;">
+    <a class="cx-btn cx-btn-primary" href="app.html" style="padding:10px 18px;min-height:0;">Run a test</a>
+    <button class="acct-chip" id="acct-chip" aria-haspopup="true" aria-expanded="false">
+      <span class="avatar" id="acct-avatar">Y</span>
+      <span class="nm" id="acct-name">You</span>
+    </button>
+    <div class="glass acct-menu cx-hidden" id="acct-menu" role="menu">
+      <div class="head" id="acct-head">Account</div>
+      <div class="sub" id="acct-sub"></div>
+      <a id="acct-signin" href="account.html" class="cx-hidden">Sign in to sync across devices</a>
+      <button id="acct-signout" class="cx-hidden">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<main class="dash-body">
+  <div class="cx-wrap" id="view"><!-- routed content --></div>
+</main>
+
+<script src="js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/util.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/store.js"></script>
+<script src="js/store-remote.js"></script>
+<script src="js/scores.js"></script>
+<script src="js/history.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
+</script>
+</body>
+</html>

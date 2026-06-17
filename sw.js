@@ -11,19 +11,22 @@
      still renders offline after the first online visit.
    Bump CACHE on any shell change to retire the old cache.
    ============================================================= */
-const CACHE = "nr-shell-v13";
+const CACHE = "cortex-shell-v14";
 
 // Paths are relative to the SW scope, so this works under a Pages subpath.
 const SHELL = [
   "./",
   "./index.html",      // marketing landing
   "./account.html",    // sign up / sign in interstitial
+  "./dashboard.html",  // post-sign-in hub
   "./sensor-setup.html",
   "./app.html",        // the instrument app
   "./manifest.webmanifest",
+  "./css/cortex.css",
   "./css/landing.css",
   "./css/landing.v6.css",
   "./js/landing.js",
+  "./js/dashboard.js",
   "./css/styles.css",
   "./js/util.js",
   "./js/sensor.js",

@@ -3,32 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NeuroReadiness — Readiness Check</title>
-  <meta name="description" content="A browser cognitive-readiness instrument with three short tasks, physiological context, and a data-confidence gate. Not a medical device." />
+  <title>Cortex — Readiness Check</title>
+  <meta name="description" content="The Cortex instrument: three short cognitive tasks, live physiological context, and a confidence gate, fused into your Cortex Score. Not a medical device." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Headline Cortex Score on the results screen */
+    .cortex-headline { display: flex; align-items: center; gap: 22px; padding: 20px 22px; margin-bottom: 16px;
+      border: 1px solid var(--line); border-radius: 16px; background:
+      radial-gradient(120% 140% at 0% 0%, var(--teal-dim), transparent 60%), var(--panel); }
+    .cortex-headline-value { font-family: var(--mono); font-weight: 600; font-size: 56px; line-height: 0.95; color: var(--ink); }
+    .cortex-headline-max { font-size: 18px; color: var(--muted-2); }
+    .cortex-headline-name { font-family: var(--display); font-weight: 600; font-size: 19px; margin-bottom: 4px; }
+    .cortex-headline-why { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; max-width: 52ch; }
+    .conf-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; background: var(--teal-dim); color: var(--teal-ink);
+      border: 1px solid rgba(20,184,166,0.4); }
+    .conf-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+    .conf-chip .ic { font-style: normal; font-weight: 700; }
+    .conf-chip.low { background: var(--amber-dim); color: var(--amber); border-color: rgba(217,119,6,0.45); }
+    .conf-chip.low .dot { background: var(--amber-bright); }
+    @media (max-width: 520px) { .cortex-headline { flex-direction: column; align-items: flex-start; gap: 12px; } }
+  </style>
   <!-- PWA: installable + offline. Harmless on file:// (SW only registers over http/https). -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#E9ECF0" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="NeuroReadiness" />
+  <meta name="apple-mobile-web-app-title" content="Cortex" />
 </head>
 <body>
   <div class="app">
 
     <!-- Top bar -->
     <header class="topbar">
-      <a class="brand" href="index.html" title="Home">
-        <h1>NeuroReadiness</h1>
-        <span class="tag">cognitive readiness</span>
+      <a class="brand" href="dashboard.html" title="Dashboard">
+        <h1>Cortex</h1>
+        <span class="tag">the test</span>
       </a>
       <nav class="topnav">
-        <a class="nav-link" href="index.html">Home</a>
+        <a class="nav-link" href="dashboard.html">Dashboard</a>
         <button class="nav-link active" data-nav="check">Check</button>
         <button class="nav-link" data-nav="history">History</button>
         <button class="nav-link" data-nav="faq">FAQ</button>
@@ -97,7 +115,7 @@
       <div class="card">
         <h2 class="screen-title">Set up a session</h2>
         <p class="screen-lede">
-          NeuroReadiness benchmarks alertness, cognitive control and working memory with three short tasks,
+          Cortex benchmarks alertness, cognitive control and working memory with three short tasks,
           while PPG, motion and GSR data provide physiological context. Pick a sensor placement to begin.
           <strong id="source-mode-label">Simulated demo mode.</strong>
           <span id="source-mode-detail">Synthetic sensor data will demonstrate the complete workflow.</span>
@@ -212,8 +230,10 @@
     <!-- SCREEN: results -->
     <section class="screen hidden" id="screen-results">
       <div class="card">
-        <h2 class="screen-title">Readiness summary</h2>
+        <h2 class="screen-title">Your Cortex Score</h2>
         <p class="screen-lede">Heuristic readouts from this session. Read the confidence panel first — it gates everything below it.</p>
+
+        <div class="cortex-headline" id="cortex-headline"></div>
 
         <div class="confidence-panel warn" id="confidence-panel">
           <div class="confidence-figure">
@@ -250,13 +270,14 @@
           <span id="session-stats">—</span>
           <div class="btn-row">
             <button class="btn" id="export-btn">Export CSV</button>
-            <button class="btn" id="view-history-btn">View history</button>
-            <button class="btn btn-primary" id="restart-btn">New session</button>
+            <button class="btn" id="restart-btn">New session</button>
+            <a class="btn" id="journal-note-btn" href="dashboard.html#/journal">Add a journal note</a>
+            <a class="btn btn-primary" id="back-dashboard-btn" href="dashboard.html#/home">Back to dashboard</a>
           </div>
         </div>
 
         <div class="disclaimer">
-          <strong>Not a medical device.</strong> NeuroReadiness produces heuristic performance proxies from
+          <strong>Not a medical device.</strong> Cortex produces heuristic performance proxies from
           reaction-time tasks and photoplethysmography. It does not measure cerebral blood flow, diagnose any
           condition, or provide medical advice. Scores are relative indicators for self-tracking and product
           exploration only. Temple-mode PPG reflects superficial perfusion, not brain hemodynamics. GSR is an
@@ -393,7 +414,7 @@
         </div>
 
         <div class="disclaimer">
-          <strong>Not a medical device.</strong> NeuroReadiness produces heuristic performance proxies from
+          <strong>Not a medical device.</strong> Cortex produces heuristic performance proxies from
           reaction-time tasks and photoplethysmography. It does not measure cerebral blood flow, diagnose any
           condition, or provide medical advice. Electrodermal data is an arousal proxy only.
         </div>

@@ -471,6 +471,22 @@
   ];
 
   function renderScoreCards(s) {
+    // Headline Cortex Score — the confidence-gated composite, shown first.
+    const head = el("#cortex-headline");
+    if (head) {
+      const cs = NR.scores.cortexScore(s);
+      const low = isFinite(cs.trust) && cs.trust < 40;
+      const val = isFinite(cs.value) ? Math.round(cs.value) : "—";
+      head.innerHTML =
+        `<div class="cortex-headline-value">${val}<span class="cortex-headline-max">/100</span></div>` +
+        `<div class="cortex-headline-body">` +
+          `<div class="cortex-headline-name">Cortex Score</div>` +
+          `<div class="cortex-headline-why">${cs.why}</div>` +
+          `<span class="conf-chip${low ? " low" : ""}"><span class="dot"></span><i class="ic">${low ? "?" : "✓"}</i>` +
+            `Confidence ${isFinite(cs.trust) ? Math.round(cs.trust) : "—"}${low ? " · low" : ""}</span>` +
+        `</div>`;
+    }
+
     const grid = el("#score-grid");
     grid.innerHTML = CARD_DEFS.map((d) => {
       const r = s[d.key];
@@ -712,7 +728,6 @@
     });
     el("#export-btn").addEventListener("click", () => recorder.exportAll());
     el("#restart-btn").addEventListener("click", restart);
-    el("#view-history-btn").addEventListener("click", () => navigate("history"));
 
     // Context tags on the results screen — update the just-saved record.
     NR.dom.all(".tag-chip").forEach((chip) =>

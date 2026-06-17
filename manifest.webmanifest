@@ -1,13 +1,13 @@
 {
-  "name": "NeuroReadiness — Cognitive Readiness",
-  "short_name": "NeuroReadiness",
-  "description": "A browser cognitive-readiness instrument: three short tasks plus a PPG sensor, fused into honest readiness scores with a data-confidence gate. Not a medical device.",
+  "name": "Cortex — Cognitive Readiness",
+  "short_name": "Cortex",
+  "description": "Cortex measures how ready your mind is to perform: three short cognitive tasks plus a custom head-worn sensor suite, fused into honest, personal readiness scores with a confidence gate. Not a medical device.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#E9ECF0",
+  "theme_color": "#E9ECF0",
   "categories": ["health", "productivity", "utilities"],
   "icons": [
     {
