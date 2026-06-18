@@ -131,7 +131,9 @@
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
-  // ---- Floating nav: shrink + gain opacity on scroll -----------------------
+  // ---- Floating nav: shrink + gain opacity on scroll, plus scroll-spy ------
+  // Highlights the nav link whose section is currently in view, giving the
+  // landing nav the same glowing active state the app's nav has.
   function initNav() {
     var nav = document.querySelector("[data-cx-nav]");
     if (!nav) return;
@@ -141,6 +143,31 @@
       nav.style.background = s ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.6)";
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Scroll-spy: map each nav link to its target section, then flag the
+    // section nearest the top of the viewport as active.
+    var links = $("[data-cx-link]");
+    var spy = links.map(function (a) {
+      var id = (a.getAttribute("href") || "").replace("#", "");
+      return { link: a, section: id ? document.getElementById(id) : null };
+    }).filter(function (s) { return s.section; });
+    if (!spy.length) return;
+
+    var setActive = function (active) {
+      spy.forEach(function (s) { s.link.classList.toggle("active", s.link === active); });
+    };
+    var onSpy = function () {
+      // Anchor a little below the fixed nav so the active link flips as a
+      // section's heading clears the bar.
+      var line = window.scrollY + 120;
+      var current = null;
+      spy.forEach(function (s) { if (s.section.offsetTop <= line) current = s.link; });
+      // Clear highlight while still in the hero (above the first section).
+      setActive(current);
+    };
+    onSpy();
+    window.addEventListener("scroll", onSpy, { passive: true });
+    window.addEventListener("resize", onSpy, { passive: true });
   }
 
   function start() {

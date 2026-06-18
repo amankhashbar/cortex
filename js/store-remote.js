@@ -112,6 +112,97 @@
         return list;
       },
 
+      // Journal ------------------------------------------------------------
+      // RLS scopes journal_entries to the owner, same as sessions.
+      async addJournalEntry(entry) {
+        const e = {
+          id: entry.id || uid(),
+          profileId: userId,
+          timestamp: entry.timestamp || Date.now(),
+          text: entry.text || "",
+          tags: entry.tags || [],
+          sessionId: entry.sessionId || null,
+          score: typeof entry.score === "number" ? entry.score : null,
+        };
+        const { error } = await sb.from("journal_entries").insert({
+          id: e.id, user_id: userId, timestamp: e.timestamp, data: e,
+        });
+        if (error) throw error;
+        return e;
+      },
+      async getJournalEntries() {
+        const { data, error } = await sb.from("journal_entries")
+          .select("*").eq("user_id", userId).order("timestamp", { ascending: false });
+        if (error) throw error;
+        return (data || []).map(function (row) {
+          const e = Object.assign({}, row.data || {});
+          e.id = row.id; e.profileId = userId;
+          if (row.timestamp != null) e.timestamp = Number(row.timestamp);
+          return e;
+        });
+      },
+      async updateJournalEntry(id, patch) {
+        const { data: cur, error: e1 } = await sb.from("journal_entries").select("*").eq("id", id).maybeSingle();
+        if (e1) throw e1;
+        if (!cur) return null;
+        const next = Object.assign({}, cur.data || {}, patch, { id, profileId: userId });
+        const upd = { data: next };
+        if (patch.timestamp != null) upd.timestamp = patch.timestamp;
+        const { error: e2 } = await sb.from("journal_entries").update(upd).eq("id", id);
+        if (e2) throw e2;
+        return next;
+      },
+      async deleteJournalEntry(id) {
+        const { error } = await sb.from("journal_entries").delete().eq("id", id);
+        if (error) throw error;
+      },
+
+      // Compete / leaderboard ---------------------------------------------
+      // Opt-in: a row in `leaderboard` IS the opt-in. RLS lets every signed-in
+      // user SELECT all rows (that's the leaderboard) but write only their own.
+      // We never publish automatically — only when the user opts in.
+      async getLeaderboard(period) {
+        let q = sb.from("leaderboard").select("*");
+        if (period) q = q.eq("period", period);
+        const { data, error } = await q;
+        if (error) throw error;
+        return (data || []).map(function (r) {
+          return {
+            userId: r.user_id,
+            displayName: r.display_name || "Anonymous",
+            bestScore: typeof r.best_score === "number" ? r.best_score : null,
+            improvement: typeof r.improvement === "number" ? r.improvement : null,
+            period: r.period,
+            isMe: r.user_id === userId,
+          };
+        });
+      },
+      async getMyLeaderboardEntry(period) {
+        const { data, error } = await sb.from("leaderboard")
+          .select("*").eq("user_id", userId).eq("period", period).maybeSingle();
+        if (error) throw error;
+        return data || null;
+      },
+      async upsertLeaderboardEntry(entry) {
+        const row = {
+          user_id: userId,
+          period: entry.period,
+          display_name: entry.displayName || profile.name || "Anonymous",
+          best_score: typeof entry.bestScore === "number" ? Math.round(entry.bestScore) : null,
+          improvement: typeof entry.improvement === "number" ? Math.round(entry.improvement) : null,
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await sb.from("leaderboard").upsert(row, { onConflict: "user_id,period" });
+        if (error) throw error;
+        return row;
+      },
+      async leaveLeaderboard(period) {
+        let q = sb.from("leaderboard").delete().eq("user_id", userId);
+        if (period) q = q.eq("period", period);
+        const { error } = await q;
+        if (error) throw error;
+      },
+
       // Stats / baseline (identical to local store) -----------------------
       baselineStats(values) {
         const v = values.filter((x) => typeof x === "number" && isFinite(x));

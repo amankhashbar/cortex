@@ -485,7 +485,7 @@ select {
   border-bottom: 2px solid transparent;
 }
 .nav-link:hover { color: var(--ink); }
-.nav-link.active { color: var(--teal-ink); border-bottom-color: var(--teal); }
+.nav-link.active { color: var(--teal-ink); border-bottom-color: var(--teal); box-shadow: 0 2px 10px -4px var(--teal); }
 
 /* Save row + context tags (results screen) */
 .save-row {

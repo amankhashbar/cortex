@@ -86,15 +86,15 @@
   var ROUTES = {
     home: renderHome,
     trends: function () { renderTrends(); },
-    activities: function () { stub("Activities", "violet", "Suggested ways to improve — cognitive drills and physiological aids, each honestly framed. Coming in the next build.", "🧠"); },
-    journal: function () { stub("Journal", "violet", "Log and tag your sessions with notes, and share entries with people you follow. Coming in the next build.", "📓"); },
-    compete: function () { stub("Compete", "violet", "Opt-in leaderboards and monthly competitions, ranked on score and improvement — only confidence-qualified sessions count. Coming in the next build.", "🏆"); },
+    activities: function () { renderActivities(); },
+    journal: function () { renderJournal(); },
+    compete: function () { renderCompete(); },
   };
   function currentRoute() { return (location.hash.replace(/^#\//, "") || "home").split("?")[0]; }
   function route() {
     var r = currentRoute();
     if (!ROUTES[r]) r = "home";
-    NR.dom.all("#dash-nav a").forEach(function (a) { a.classList.toggle("active", a.getAttribute("data-route") === r); });
+    NR.dom.all("[data-route]").forEach(function (a) { a.classList.toggle("active", a.getAttribute("data-route") === r); });
     window.scrollTo(0, 0);
     ROUTES[r]();
   }
@@ -218,7 +218,7 @@
   function guestNudge() {
     return '<div class="cx-card glass" style="margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">' +
       '<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px;">You’re in guest mode</div>' +
-      '<div style="font-size:13px;color:var(--ink-2);">Sessions stay on this device. Create an account to sync across devices and unlock Journal &amp; Compete.</div></div>' +
+      '<div style="font-size:13px;color:var(--ink-2);">Sessions stay on this device. Create an account to sync across devices and join Compete.</div></div>' +
       '<a class="cx-btn cx-btn-ghost" href="account.html">Sign in to sync</a></div>';
   }
 
@@ -283,7 +283,7 @@
       '<div style="display:flex;flex-direction:column;gap:10px;">' + log + "</div>";
   }
 
-  // ---- Pillar stub ---------------------------------------------------------
+  // ---- Pillar stub (kept for empty Trends) ---------------------------------
   function stubHTML(title, accent, body, ic) {
     return '<div class="cx-card glass pillar-stub">' +
       '<div class="badge">' + title + '</div>' +
@@ -291,7 +291,307 @@
       '<h1 class="cx-h2" style="margin-bottom:14px;">' + title + "</h1>" +
       '<p style="font-size:16px;color:var(--ink-2);max-width:50ch;margin:0 auto 8px;">' + body + "</p></div>";
   }
-  function stub(title, accent, body, ic) { view.innerHTML = stubHTML(title, accent, body, ic); }
+
+  function pageHead(title, sub) {
+    return '<div class="dash-section-head"><h1 class="greeting">' + esc(title) + "</h1>" +
+      (sub ? '<span class="cx-label">' + esc(sub) + "</span>" : "") + "</div>";
+  }
+
+  // =====================================================================
+  // ACTIVITIES — an honest catalog of cognitive drills + physiological
+  // aids. No efficacy claims; each is labelled by what it is and isn't.
+  // Pure front-end (no table): browse, open the matching test, or log the
+  // intent to your Journal. Color-coded: teal = cognition, blue = physiology.
+  // =====================================================================
+  var ACTIVITIES = [
+    { id: "pvt-warmup", cat: "cognition", name: "Reaction warm-up (PVT)", dur: "3 min",
+      what: "A short psychomotor vigilance drill — tap the moment the target appears.",
+      honest: "Measures simple reaction speed and lapses. It does not train intelligence; it’s a sensitive readout of alertness.",
+      action: { label: "Open the test", href: "app.html" } },
+    { id: "stroop-set", cat: "cognition", name: "Interference set (Stroop)", dur: "4 min",
+      what: "Name the ink colour, not the word. Practises holding a rule against a habit.",
+      honest: "Exercises cognitive control / inhibition. Gains are mostly task-specific — treat it as a probe, not a brain workout.",
+      action: { label: "Open the test", href: "app.html" } },
+    { id: "nback", cat: "cognition", name: "Working-memory load (2-back)", dur: "5 min",
+      what: "Track whether the current item matches the one two steps back.",
+      honest: "Loads working memory. Evidence that n-back transfers to general ‘IQ’ is weak and contested — we don’t claim it.",
+      action: { label: "Open the test", href: "app.html" } },
+    { id: "breath", cat: "physiology", name: "Paced breathing", dur: "5 min",
+      what: "Slow breathing around six breaths a minute to settle arousal before a test.",
+      honest: "May lower physiological arousal short-term (visible in PPG/EDA). Not a treatment for anything; effects are transient.",
+      action: { label: "Log to Journal", journal: "Paced breathing — 5 min before a session." } },
+    { id: "light-walk", cat: "physiology", name: "Movement break", dur: "10 min",
+      what: "A brief walk to shift state between long focus blocks.",
+      honest: "General wellbeing aid. Any readiness effect is indirect and varies by person — we log it, we don’t score it.",
+      action: { label: "Log to Journal", journal: "Movement break — 10 min walk." } },
+    { id: "hydrate", cat: "physiology", name: "Hydration + reset", dur: "2 min",
+      what: "Water and a screen break before re-measuring.",
+      honest: "Basic upkeep, not a performance hack. Included because dehydration can degrade signal quality and focus.",
+      action: { label: "Log to Journal", journal: "Hydration + reset." } },
+  ];
+
+  function renderActivities() {
+    var card = function (a) {
+      var phys = a.cat === "physiology";
+      var tagCls = phys ? "cat-blue" : "cat-teal";
+      var tagTxt = phys ? "Physiology" : "Cognition";
+      var act = a.action.href
+        ? '<a class="cx-btn cx-btn-ghost cx-btn-sm" href="' + a.action.href + '">' + esc(a.action.label) + "</a>"
+        : '<button class="cx-btn cx-btn-ghost cx-btn-sm" data-journal="' + esc(a.action.journal) + '">' + esc(a.action.label) + "</button>";
+      return '<div class="cx-card glass act-card">' +
+        '<div class="act-top"><span class="cat-chip ' + tagCls + '">' + tagTxt + "</span>" +
+        '<span class="act-dur">' + esc(a.dur) + "</span></div>" +
+        '<h3 class="act-name">' + esc(a.name) + "</h3>" +
+        '<p class="act-what">' + esc(a.what) + "</p>" +
+        '<p class="act-honest"><span class="act-honest-k">Honest take</span> ' + esc(a.honest) + "</p>" +
+        '<div class="act-foot">' + act + "</div></div>";
+    };
+    view.innerHTML =
+      pageHead("Activities", "Drills & aids · honestly framed") +
+      '<p style="font-size:15px;color:var(--ink-2);max-width:62ch;margin:-6px 0 22px;">Ways to warm up or shift state before a reading. We label what each one actually does — and what it doesn’t. None of these are treatments or guaranteed boosts.</p>' +
+      '<div class="act-grid">' + ACTIVITIES.map(card).join("") + "</div>";
+
+    NR.dom.all("[data-journal]", view).forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var text = btn.getAttribute("data-journal");
+        try {
+          await NR.store.addJournalEntry({ text: text, tags: ["activity"] });
+          btn.textContent = "Logged ✓";
+          btn.disabled = true;
+        } catch (_) { btn.textContent = "Couldn’t log"; }
+      });
+    });
+  }
+
+  // =====================================================================
+  // JOURNAL — private notes & tags, optionally tied to your latest score.
+  // Full CRUD against whichever store is active (Supabase signed-in / local
+  // IndexedDB guest). Composer up top, newest entries below.
+  // =====================================================================
+  var jState = { entries: [], editingId: null };
+
+  async function renderJournal() {
+    try { jState.entries = await NR.store.getJournalEntries(); } catch (_) { jState.entries = []; }
+    var latest = state.sessions.length ? state.sessions[state.sessions.length - 1] : null;
+    var latestScore = latest ? latest.readiness : null;
+
+    var editing = jState.editingId ? jState.entries.find(function (e) { return e.id === jState.editingId; }) : null;
+    var composer =
+      '<form class="cx-card glass jr-composer" id="jr-form">' +
+        '<textarea id="jr-text" class="jr-text" rows="3" placeholder="How did that session feel? Sleep, caffeine, stress, context…" required>' + esc(editing ? editing.text : "") + "</textarea>" +
+        '<div class="jr-row">' +
+          '<input id="jr-tags" class="jr-tags" type="text" placeholder="tags, comma separated" value="' + esc(editing && editing.tags ? editing.tags.join(", ") : "") + '" />' +
+          (latestScore != null && !editing ?
+            '<label class="jr-link"><input type="checkbox" id="jr-link" /> Tag with latest score (' + fmt(latestScore) + ")</label>" : "") +
+          '<div class="jr-actions">' +
+            (editing ? '<button type="button" class="cx-btn cx-btn-ghost cx-btn-sm" id="jr-cancel">Cancel</button>' : "") +
+            '<button type="submit" class="cx-btn cx-btn-primary cx-btn-sm">' + (editing ? "Save changes" : "Add entry") + "</button>" +
+          "</div>" +
+        "</div>" +
+      "</form>";
+
+    var list = jState.entries.length
+      ? jState.entries.map(journalCard).join("")
+      : '<div class="cx-card glass" style="padding:28px;text-align:center;color:var(--ink-2);">No entries yet. Give your numbers some context — what you log here is private to your account.</div>';
+
+    view.innerHTML =
+      pageHead("Journal", state.signedIn ? "Private · synced to your account" : "Private · this device only") +
+      composer +
+      '<div class="dash-section-head" style="margin-top:26px;"><h2 class="cx-h3">Entries</h2><span class="cx-label">' + jState.entries.length + " total</span></div>" +
+      '<div class="jr-list">' + list + "</div>";
+
+    bindJournal(latestScore);
+  }
+
+  function journalCard(e) {
+    var when = new Date(e.timestamp).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    var tags = (e.tags || []).map(function (t) { return '<span class="jr-tag">' + esc(t) + "</span>"; }).join("");
+    var scoreChip = (typeof e.score === "number" && isFinite(e.score))
+      ? '<span class="jr-score">Cortex ' + Math.round(e.score) + "</span>" : "";
+    return '<div class="cx-card glass jr-entry" data-id="' + esc(e.id) + '">' +
+      '<div class="jr-entry-top"><span class="jr-when">' + esc(when) + "</span>" + scoreChip +
+        '<span class="jr-entry-acts"><button class="jr-ic" data-edit="' + esc(e.id) + '" title="Edit" aria-label="Edit">✎</button>' +
+        '<button class="jr-ic" data-del="' + esc(e.id) + '" title="Delete" aria-label="Delete">🗑</button></span></div>' +
+      '<div class="jr-body">' + esc(e.text).replace(/\n/g, "<br>") + "</div>" +
+      (tags ? '<div class="jr-tags-row">' + tags + "</div>" : "") + "</div>";
+  }
+
+  function bindJournal(latestScore) {
+    var form = document.getElementById("jr-form");
+    if (form) form.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      var text = (document.getElementById("jr-text").value || "").trim();
+      if (!text) return;
+      var tags = (document.getElementById("jr-tags").value || "").split(",").map(function (t) { return t.trim(); }).filter(Boolean);
+      var linkEl = document.getElementById("jr-link");
+      try {
+        if (jState.editingId) {
+          await NR.store.updateJournalEntry(jState.editingId, { text: text, tags: tags });
+          jState.editingId = null;
+        } else {
+          var entry = { text: text, tags: tags };
+          if (linkEl && linkEl.checked && latestScore != null) entry.score = latestScore;
+          await NR.store.addJournalEntry(entry);
+        }
+        renderJournal();
+      } catch (_) { alert("Couldn’t save the entry."); }
+    });
+    var cancel = document.getElementById("jr-cancel");
+    if (cancel) cancel.addEventListener("click", function () { jState.editingId = null; renderJournal(); });
+
+    NR.dom.all("[data-edit]", view).forEach(function (b) {
+      b.addEventListener("click", function () { jState.editingId = b.getAttribute("data-edit"); renderJournal(); window.scrollTo(0, 0); });
+    });
+    NR.dom.all("[data-del]", view).forEach(function (b) {
+      b.addEventListener("click", async function () {
+        if (!confirm("Delete this journal entry?")) return;
+        try { await NR.store.deleteJournalEntry(b.getAttribute("data-del")); renderJournal(); } catch (_) {}
+      });
+    });
+  }
+
+  // =====================================================================
+  // COMPETE — opt-in monthly leaderboard. Multi-user, so it needs an
+  // account; guests get a sign-in gate. Only confidence-qualified sessions
+  // count. Joining publishes your display name + best score + improvement
+  // for the month to other signed-in users — made explicit before opt-in.
+  // =====================================================================
+  var CONF_QUALIFY = 50;   // min dataConfidence for a session to count
+
+  function currentPeriod() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+  function periodLabel(p) {
+    var parts = p.split("-");
+    return new Date(Number(parts[0]), Number(parts[1]) - 1, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
+  }
+
+  // Best confidence-qualified score this period + improvement vs the user's
+  // prior baseline (mean of qualifying sessions from before this month).
+  function myStanding(period) {
+    var startOfMonth = new Date(Number(period.split("-")[0]), Number(period.split("-")[1]) - 1, 1).getTime();
+    var qualifies = function (s) {
+      var c = s.scores && s.scores.dataConfidence;
+      return isFinite(s.readiness) && isFinite(c) && c >= CONF_QUALIFY;
+    };
+    var thisMonth = state.sessions.filter(function (s) { return qualifies(s) && s.timestamp >= startOfMonth; });
+    var prior = state.sessions.filter(function (s) { return qualifies(s) && s.timestamp < startOfMonth; });
+    if (!thisMonth.length) return { qualified: false, best: null, improvement: null, count: 0 };
+    var best = Math.max.apply(null, thisMonth.map(function (s) { return s.readiness; }));
+    var improvement = null;
+    if (prior.length) {
+      var mean = prior.reduce(function (a, s) { return a + s.readiness; }, 0) / prior.length;
+      improvement = Math.round(best - mean);
+    }
+    return { qualified: true, best: Math.round(best), improvement: improvement, count: thisMonth.length };
+  }
+
+  async function renderCompete() {
+    var period = currentPeriod();
+    // Guests can't compete — leaderboards are inherently multi-user/server-side.
+    if (!state.signedIn || typeof NR.store.getLeaderboard !== "function") {
+      view.innerHTML = pageHead("Compete", periodLabel(period)) +
+        '<div class="cx-card glass cmp-gate">' +
+        '<div class="badge">Account required</div>' +
+        '<h2 class="cx-h3" style="margin-bottom:10px;">Leaderboards live in the cloud</h2>' +
+        '<p style="color:var(--ink-2);max-width:54ch;margin:0 auto 18px;">Competing means comparing across people, so it needs an account. Your sessions stay private — only what you explicitly publish (a name + score) is ever shared.</p>' +
+        '<a class="cx-btn cx-btn-primary" href="account.html">Create an account or sign in</a></div>';
+      return;
+    }
+
+    var standing = myStanding(period);
+    var mine = null, board = null, setupPending = false;
+    try {
+      mine = await NR.store.getMyLeaderboardEntry(period);
+      board = await NR.store.getLeaderboard(period);
+    } catch (_) { setupPending = true; }
+
+    if (setupPending) {
+      view.innerHTML = pageHead("Compete", periodLabel(period)) +
+        '<div class="cx-card glass cmp-gate"><div class="badge">Coming online</div>' +
+        '<h2 class="cx-h3" style="margin-bottom:10px;">Leaderboard isn’t set up yet</h2>' +
+        '<p style="color:var(--ink-2);max-width:54ch;margin:0 auto;">The competition table hasn’t been provisioned on the backend yet. Once it’s live, you’ll be able to opt in here.</p></div>';
+      return;
+    }
+
+    var qualifyNote = '<p class="cmp-rule">Only sessions with data-confidence ≥ ' + CONF_QUALIFY +
+      ' count, so a noisy reading can’t top the board.</p>';
+
+    if (!mine) {
+      // Not opted in — show the explicit consent card.
+      var preview = standing.qualified
+        ? '<div class="cmp-standing"><div><span class="cmp-k">Your best this month</span><span class="cmp-v">' + standing.best + "</span></div>" +
+          '<div><span class="cmp-k">Improvement</span><span class="cmp-v">' + (standing.improvement == null ? "—" : (standing.improvement >= 0 ? "+" : "") + standing.improvement) + "</span></div>" +
+          '<div><span class="cmp-k">Qualified sessions</span><span class="cmp-v">' + standing.count + "</span></div></div>"
+        : '<p class="cmp-rule" style="color:var(--amber-text);">You don’t have a confidence-qualified session this month yet — run a clean test to get on the board.</p>';
+
+      view.innerHTML = pageHead("Compete", periodLabel(period)) +
+        '<div class="cx-card glass cmp-optin">' +
+          '<div class="badge">Opt-in · off by default</div>' +
+          '<h2 class="cx-h3" style="margin-bottom:8px;">Join the leaderboard?</h2>' +
+          '<p style="color:var(--ink-2);max-width:60ch;">Joining publishes <strong>only this</strong> to other signed-in users for ' + esc(periodLabel(period)) + ':</p>' +
+          '<ul class="cmp-shares"><li>Your display name (<strong>' + esc(state.signedIn && NR.auth ? NR.auth.displayName(state.user) : "You") + '</strong>)</li>' +
+          '<li>Your best confidence-qualified Cortex Score this month</li><li>Your improvement vs your earlier baseline</li></ul>' +
+          '<p style="color:var(--ink-2);max-width:60ch;font-size:13px;">Your individual sessions, notes, and physiology are never shared. You can leave anytime, which deletes your row.</p>' +
+          preview + qualifyNote +
+          '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">' +
+          (standing.qualified ? '<button class="cx-btn cx-btn-primary" id="cmp-join">Publish &amp; join</button>' : '<a class="cx-btn cx-btn-primary" href="app.html">Run a qualifying test</a>') +
+          "</div></div>";
+
+      var join = document.getElementById("cmp-join");
+      if (join) join.addEventListener("click", async function () {
+        join.disabled = true; join.textContent = "Joining…";
+        try {
+          await NR.store.upsertLeaderboardEntry({ period: period, bestScore: standing.best, improvement: standing.improvement });
+          renderCompete();
+        } catch (_) { join.disabled = false; join.textContent = "Couldn’t join — try again"; }
+      });
+      return;
+    }
+
+    // Opted in — render the board.
+    var by = (location.hash.split("?")[1] || "").indexOf("by=improvement") >= 0 ? "improvement" : "score";
+    board.sort(function (a, b) {
+      if (by === "improvement") return (b.improvement == null ? -1e9 : b.improvement) - (a.improvement == null ? -1e9 : a.improvement);
+      return (b.bestScore == null ? -1 : b.bestScore) - (a.bestScore == null ? -1 : a.bestScore);
+    });
+    var myRank = board.findIndex(function (r) { return r.isMe; }) + 1;
+
+    var rows = board.map(function (r, i) {
+      return '<div class="cmp-row' + (r.isMe ? " me" : "") + '">' +
+        '<span class="cmp-rank">' + (i + 1) + "</span>" +
+        '<span class="cmp-name">' + esc(r.displayName) + (r.isMe ? ' <span class="cmp-you">you</span>' : "") + "</span>" +
+        '<span class="cmp-score">' + (r.bestScore == null ? "—" : r.bestScore) + "</span>" +
+        '<span class="cmp-imp">' + (r.improvement == null ? "—" : (r.improvement >= 0 ? "+" : "") + r.improvement) + "</span></div>";
+    }).join("");
+
+    var freshBest = standing.qualified && (mine.best_score == null || standing.best > mine.best_score);
+
+    view.innerHTML = pageHead("Compete", periodLabel(period)) +
+      '<div class="cx-card glass" style="padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">' +
+        '<div><div class="cx-label">Your rank</div><div style="font-family:var(--font-mono);font-weight:600;font-size:30px;">' + (myRank || "—") + '<span style="font-size:14px;color:var(--muted);"> / ' + board.length + "</span></div></div>" +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+          (freshBest ? '<button class="cx-btn cx-btn-ghost cx-btn-sm" id="cmp-update">Update my best (' + standing.best + ")</button>" : "") +
+          '<button class="cx-btn cx-btn-ghost cx-btn-sm" id="cmp-leave">Leave</button>' +
+        "</div></div>" +
+      '<div class="cmp-toggle"><a href="#/compete" class="' + (by === "score" ? "on" : "") + '">By score</a>' +
+        '<a href="#/compete?by=improvement" class="' + (by === "improvement" ? "on" : "") + '">By improvement</a></div>' +
+      '<div class="cx-card glass cmp-board"><div class="cmp-row cmp-headrow"><span class="cmp-rank">#</span><span class="cmp-name">Player</span><span class="cmp-score">Score</span><span class="cmp-imp">Δ</span></div>' +
+        rows + "</div>" + qualifyNote;
+
+    var upd = document.getElementById("cmp-update");
+    if (upd) upd.addEventListener("click", async function () {
+      upd.disabled = true;
+      try { await NR.store.upsertLeaderboardEntry({ period: period, bestScore: standing.best, improvement: standing.improvement }); renderCompete(); }
+      catch (_) { upd.disabled = false; }
+    });
+    var leave = document.getElementById("cmp-leave");
+    if (leave) leave.addEventListener("click", async function () {
+      if (!confirm("Leave the leaderboard? This deletes your published row.")) return;
+      try { await NR.store.leaveLeaderboard(period); renderCompete(); } catch (_) {}
+    });
+  }
 
   boot();
 })();

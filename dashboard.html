@@ -45,11 +45,95 @@
   .prompt-card .pc-sub { font-size: 13px; color: var(--ink-2); line-height: 1.45; }
   .pillar-stub { text-align: center; padding: 80px 24px; }
   .pillar-stub .badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet-text); background: var(--violet-dim); border: 1px solid var(--violet-line); padding: 6px 12px; border-radius: var(--r-pill); margin-bottom: 18px; }
+
+  /* Small button variant used across the pillars */
+  .cx-btn-sm { font-size: 13px; padding: 9px 16px; min-height: 0; }
+
+  /* Activities */
+  .act-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .act-card { padding: 20px; display: flex; flex-direction: column; }
+  .act-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cat-chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 9px; border-radius: var(--r-pill); border: 1px solid; }
+  .cat-chip.cat-teal { color: var(--teal-text); background: var(--teal-dim); border-color: rgba(45,212,191,0.35); }
+  .cat-chip.cat-blue { color: var(--blue-text); background: var(--blue-dim); border-color: var(--blue-line); }
+  .act-dur { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .act-name { font-family: var(--font-display); font-weight: 600; font-size: 17px; margin: 0 0 6px; }
+  .act-what { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0 0 10px; }
+  .act-honest { font-size: 13px; color: var(--ink-2); line-height: 1.5; margin: 0 0 14px; padding: 10px 12px; background: rgba(0,0,0,0.03); border-radius: 10px; }
+  .act-honest-k { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .act-foot { margin-top: auto; }
+
+  /* Journal */
+  .jr-composer { padding: 16px; }
+  .jr-text { width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: 10px; padding: 12px; font: inherit; font-size: 15px; background: rgba(255,255,255,0.6); color: var(--ink); box-sizing: border-box; }
+  .jr-text:focus { outline: 2px solid var(--teal-text); outline-offset: 1px; }
+  .jr-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .jr-tags { flex: 1; min-width: 160px; border: 1px solid var(--line); border-radius: var(--r-pill); padding: 8px 14px; font: inherit; font-size: 13px; background: rgba(255,255,255,0.6); color: var(--ink); }
+  .jr-link { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+  .jr-actions { display: flex; gap: 8px; margin-left: auto; }
+  .jr-list { display: flex; flex-direction: column; gap: 12px; }
+  .jr-entry { padding: 16px 18px; }
+  .jr-entry-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .jr-when { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .jr-score { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--teal-text); background: var(--teal-dim); padding: 3px 9px; border-radius: var(--r-pill); }
+  .jr-entry-acts { margin-left: auto; display: flex; gap: 4px; }
+  .jr-ic { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--muted); padding: 4px 6px; border-radius: 7px; }
+  .jr-ic:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+  .jr-body { font-size: 15px; line-height: 1.55; color: var(--ink); white-space: normal; }
+  .jr-tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .jr-tag { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); background: rgba(0,0,0,0.04); padding: 3px 9px; border-radius: var(--r-pill); }
+
+  /* Compete */
+  .cmp-gate, .cmp-optin { text-align: center; padding: 40px 28px; }
+  .cmp-gate .badge, .cmp-optin .badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--violet-text); background: var(--violet-dim); border: 1px solid var(--violet-line); padding: 6px 12px; border-radius: var(--r-pill); margin-bottom: 16px; }
+  .cmp-optin { text-align: left; }
+  .cmp-shares { margin: 12px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.7; }
+  .cmp-rule { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+  .cmp-standing { display: flex; gap: 26px; flex-wrap: wrap; margin: 16px 0; padding: 14px 16px; background: var(--violet-dim); border-radius: 12px; }
+  .cmp-standing .cmp-k { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .cmp-standing .cmp-v { font-family: var(--font-mono); font-weight: 600; font-size: 24px; color: var(--ink); }
+  .cmp-toggle { display: inline-flex; gap: 4px; padding: 4px; background: rgba(0,0,0,0.04); border-radius: var(--r-pill); margin-bottom: 14px; }
+  .cmp-toggle a { text-decoration: none; font-size: 13px; font-weight: 500; color: var(--ink-2); padding: 7px 14px; border-radius: var(--r-pill); }
+  .cmp-toggle a.on { background: var(--bg-elev-1); color: var(--violet-text); box-shadow: var(--elev-card); }
+  .cmp-board { padding: 6px 8px; }
+  .cmp-row { display: grid; grid-template-columns: 40px 1fr 70px 70px; align-items: center; gap: 8px; padding: 12px 12px; border-bottom: 1px solid var(--line); }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-headrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .cmp-row.me { background: var(--violet-dim); border-radius: 10px; }
+  .cmp-rank { font-family: var(--font-mono); font-weight: 600; color: var(--muted); }
+  .cmp-name { font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cmp-you { font-family: var(--font-mono); font-size: 10px; color: var(--violet-text); background: rgba(139,92,246,0.16); padding: 2px 7px; border-radius: var(--r-pill); }
+  .cmp-score, .cmp-imp { font-family: var(--font-mono); font-weight: 600; text-align: right; color: var(--ink); }
+  .cmp-imp { color: var(--ink-2); }
+
+  /* Mobile bottom tab bar — hidden on desktop, shown ≤760px */
+  .dash-tabbar { display: none; }
   @media (max-width: 760px) {
+    .act-grid { grid-template-columns: 1fr; }
     .dash-nav-links { display: none; }
     .metric-grid { grid-template-columns: repeat(2, 1fr); }
     .prompt-grid { grid-template-columns: 1fr; }
     .acct-chip .nm { display: none; }
+    /* leave room for the fixed tab bar */
+    .dash-body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .dash-tabbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      justify-content: space-around; gap: 2px;
+      padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+      background: rgba(255,255,255,0.9);
+      -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -6px 24px rgba(12,17,22,0.08);
+    }
+    .dash-tabbar a {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      text-decoration: none; color: var(--muted);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.01em;
+      padding: 4px 2px; border-radius: 10px; transition: color var(--dur-base);
+    }
+    .dash-tabbar a .tb-ic { font-size: 17px; line-height: 1; filter: grayscale(1) opacity(0.6); transition: filter var(--dur-base); }
+    .dash-tabbar a.active { color: var(--teal-text); }
+    .dash-tabbar a.active .tb-ic { filter: none; }
   }
   @media (max-width: 420px) { .metric-grid { grid-template-columns: 1fr; } }
 </style>
@@ -73,10 +157,21 @@
     <div class="glass acct-menu cx-hidden" id="acct-menu" role="menu">
       <div class="head" id="acct-head">Account</div>
       <div class="sub" id="acct-sub"></div>
+      <a id="acct-home" href="index.html">← Cortex home</a>
       <a id="acct-signin" href="account.html" class="cx-hidden">Sign in to sync across devices</a>
       <button id="acct-signout" class="cx-hidden">Sign out</button>
     </div>
   </div>
+</nav>
+
+<!-- Mobile route switcher: fixed bottom tab bar (hidden on desktop). The
+     router highlights [data-route] links in both this bar and the top nav. -->
+<nav class="dash-tabbar" id="dash-tabbar" aria-label="Sections">
+  <a href="#/home" data-route="home"><span class="tb-ic" aria-hidden="true">⌂</span>Home</a>
+  <a href="#/trends" data-route="trends"><span class="tb-ic" aria-hidden="true">📈</span>Trends</a>
+  <a href="#/activities" data-route="activities"><span class="tb-ic" aria-hidden="true">🧠</span>Activities</a>
+  <a href="#/journal" data-route="journal"><span class="tb-ic" aria-hidden="true">📓</span>Journal</a>
+  <a href="#/compete" data-route="compete"><span class="tb-ic" aria-hidden="true">🏆</span>Compete</a>
 </nav>
 
 <main class="dash-body">

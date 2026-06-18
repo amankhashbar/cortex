@@ -18,7 +18,7 @@
   const NR = window.NR;
 
   const DB_NAME = "neuroreadiness";
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;            // v2 adds the `journal` store
   const ACTIVE_KEY = "nr.activeProfile";
 
   let _db = null;
@@ -54,6 +54,11 @@
           ss.createIndex("profileId", "profileId", { unique: false });
           ss.createIndex("timestamp", "timestamp", { unique: false });
         }
+        if (!db.objectStoreNames.contains("journal")) {
+          const js = db.createObjectStore("journal", { keyPath: "id" });
+          js.createIndex("profileId", "profileId", { unique: false });
+          js.createIndex("timestamp", "timestamp", { unique: false });
+        }
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
@@ -73,6 +78,8 @@
   const _allProfiles = () => reqP(store("profiles").getAll());
   const _allSessionsFor = (pid) =>
     reqP(store("sessions").index("profileId").getAll(pid));
+  const _allJournalFor = (pid) =>
+    reqP(store("journal").index("profileId").getAll(pid));
 
   // --- One-time init: open DB, guarantee a default profile -----------------
   function ready() {
@@ -131,9 +138,11 @@
     async deleteProfile(id) {
       await ready();
       const sess = await _allSessionsFor(id);
-      const txw = _db.transaction(["profiles", "sessions"], "readwrite");
+      const jrnl = await _allJournalFor(id);
+      const txw = _db.transaction(["profiles", "sessions", "journal"], "readwrite");
       txw.objectStore("profiles").delete(id);
       sess.forEach((s) => txw.objectStore("sessions").delete(s.id));
+      jrnl.forEach((e) => txw.objectStore("journal").delete(e.id));
       await new Promise((res, rej) => { txw.oncomplete = res; txw.onerror = () => rej(txw.error); });
       // Reassign active profile if we deleted it.
       if (LS.get(ACTIVE_KEY) === id) {
@@ -189,6 +198,45 @@
       return list;
     },
 
+    // Journal ------------------------------------------------------------
+    // Entry shape: { id, profileId, timestamp, text, tags[], sessionId?, score? }
+    async addJournalEntry(entry) {
+      await ready();
+      const e = {
+        id: entry.id || uid(),
+        profileId: entry.profileId || LS.get(ACTIVE_KEY),
+        timestamp: entry.timestamp || Date.now(),
+        text: entry.text || "",
+        tags: entry.tags || [],
+        sessionId: entry.sessionId || null,
+        score: typeof entry.score === "number" ? entry.score : null,
+      };
+      await reqP(store("journal", "readwrite").put(e));
+      return e;
+    },
+
+    async getJournalEntries(profileId) {
+      await ready();
+      const pid = profileId || LS.get(ACTIVE_KEY);
+      const list = await _allJournalFor(pid);
+      list.sort((a, b) => b.timestamp - a.timestamp);   // newest first
+      return list;
+    },
+
+    async updateJournalEntry(id, patch) {
+      await ready();
+      const cur = await reqP(store("journal").get(id));
+      if (!cur) return null;
+      const next = { ...cur, ...patch, id };
+      await reqP(store("journal", "readwrite").put(next));
+      return next;
+    },
+
+    async deleteJournalEntry(id) {
+      await ready();
+      await reqP(store("journal", "readwrite").delete(id));
+    },
+
     // Stats / baseline ----------------------------------------------------
     // {mean, sd, n} over a numeric array (ignoring non-finite values).
     baselineStats(values) {
@@ -212,8 +260,12 @@
       await ready();
       const profiles = await _allProfiles();
       const sessions = [];
-      for (const p of profiles) sessions.push(...(await _allSessionsFor(p.id)));
-      return { app: "neuroreadiness", version: 1, exportedAt: new Date().toISOString(), profiles, sessions };
+      const journal = [];
+      for (const p of profiles) {
+        sessions.push(...(await _allSessionsFor(p.id)));
+        journal.push(...(await _allJournalFor(p.id)));
+      }
+      return { app: "neuroreadiness", version: 1, exportedAt: new Date().toISOString(), profiles, sessions, journal };
     },
 
     async downloadExport() {
@@ -231,18 +283,20 @@
     async importData(data) {
       await ready();
       if (!data || data.app !== "neuroreadiness") throw new Error("Not a NeuroReadiness backup file.");
-      const txw = _db.transaction(["profiles", "sessions"], "readwrite");
+      const txw = _db.transaction(["profiles", "sessions", "journal"], "readwrite");
       (data.profiles || []).forEach((p) => p && p.id && txw.objectStore("profiles").put(p));
       (data.sessions || []).forEach((s) => s && s.id && txw.objectStore("sessions").put(s));
+      (data.journal || []).forEach((e) => e && e.id && txw.objectStore("journal").put(e));
       await new Promise((res, rej) => { txw.oncomplete = res; txw.onerror = () => rej(txw.error); });
-      return { profiles: (data.profiles || []).length, sessions: (data.sessions || []).length };
+      return { profiles: (data.profiles || []).length, sessions: (data.sessions || []).length, journal: (data.journal || []).length };
     },
 
     async clearAll() {
       await ready();
-      const txw = _db.transaction(["profiles", "sessions"], "readwrite");
+      const txw = _db.transaction(["profiles", "sessions", "journal"], "readwrite");
       txw.objectStore("profiles").clear();
       txw.objectStore("sessions").clear();
+      txw.objectStore("journal").clear();
       await new Promise((res, rej) => { txw.oncomplete = res; txw.onerror = () => rej(txw.error); });
       const p = mkProfile("You");
       await reqP(store("profiles", "readwrite").put(p));
