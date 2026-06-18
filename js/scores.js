@@ -94,23 +94,91 @@
     };
   }
 
-  function arousalContext(scores) {
-    const g = scores.electrodermalArousal && scores.electrodermalArousal.value;
-    if (!isFinite(g)) return { present: false, text: "" };
+  // ----- Cognition–physiology fusion ----------------------------------------
+  // The cognitive scores measure behaviour; physiology (load, arousal) measures
+  // the autonomic state behind it. Run side by side they answer different
+  // questions. fusedReadiness brings them together WITHOUT letting physiology
+  // quietly rewrite the headline:
+  //   • value — the cognitive composite, nudged by a small, confidence-scaled,
+  //             hard-capped physiological term (low signal confidence → ~no nudge).
+  //   • state — a fatigue-vs-stress-vs-strain label (the thing a phone-only test
+  //             can't produce), from cognition level × physiology.
+  //   • why   — plain-language account of how physiology moved (or didn't move)
+  //             the read. No black-box adjustments.
+  // `norm`, when supplied, is the person's own rolling stats for load/arousal
+  // ({load:{mean,sd,n}, arousal:{mean,sd,n}}), so physiology is read as deviation
+  // from THEIR normal rather than an absolute. Without it, the load/arousal
+  // scores are already session-baseline-relative, so we fall back to those.
+  const MAX_PHYSIO_NUDGE = 8; // points; physiology can never swing the headline more
 
-    const readiness = NR.scores.composite(scores);
-    const load = scores.physiologicalLoad && scores.physiologicalLoad.value;
-    let text;
-    if (isFinite(readiness) && readiness < 55 && g >= 65) {
-      text = "Performance dipped while electrodermal arousal was elevated. That pattern can fit stress or over-arousal better than simple fatigue, but it is not diagnostic.";
-    } else if (isFinite(readiness) && readiness < 55 && g < 45 && (!isFinite(load) || load < 55)) {
-      text = "Performance dipped without elevated electrodermal arousal. Fatigue or under-recovery is a plausible context to track against sleep, workout and schedule notes.";
-    } else if (g >= 65) {
-      text = "Electrodermal arousal was elevated during the tasks. Read the cognitive scores with that sympathetic-activation context in mind.";
-    } else {
-      text = "Electrodermal arousal stayed in a moderate range. Use it as context alongside readiness, not as a standalone stress score.";
+  // → roughly -1..+1 ("how far above/below your normal"), or null if unknown.
+  function deviation(value, norm) {
+    if (!isFinite(value)) return null;
+    if (norm && isFinite(norm.mean) && norm.n >= 3) {
+      const sd = isFinite(norm.sd) && norm.sd > 3 ? norm.sd : 12; // floor avoids early hypersensitivity
+      return M.clamp((value - norm.mean) / (2 * sd), -1, 1);
     }
-    return { present: true, text };
+    return M.clamp((value - 50) / 50, -1, 1); // no personal norm yet: centre on 50
+  }
+
+  function fusedReadiness(scores, norm) {
+    const cog = NR.scores.composite(scores);
+    if (!isFinite(cog)) {
+      return { value: NaN, state: "unknown", label: "No reading", why: "no cognitive data yet", trust: NaN, adjustment: 0 };
+    }
+    const conf = scores && scores.dataConfidence && scores.dataConfidence.value;
+    const trust = isFinite(conf) ? conf : NaN;
+    // Confidence gate: physiology earns influence only as the signal becomes
+    // trustworthy. Below ~40 confidence it contributes essentially nothing.
+    const w = isFinite(trust) ? M.clamp((trust - 40) / 45, 0, 1) : 0;
+
+    const loadDev = deviation(scores.physiologicalLoad && scores.physiologicalLoad.value, norm && norm.load);
+    const arDev = deviation(scores.electrodermalArousal && scores.electrodermalArousal.value, norm && norm.arousal);
+    const havePhysio = loadDev !== null || arDev !== null;
+
+    // Nudge: elevated load/arousal vs your normal means the cognitive number is
+    // being held up at autonomic cost, so sustainable readiness is a little
+    // lower. We only ever dampen for strain (never inflate), keep it small, and
+    // scale the whole thing by confidence.
+    const strain = Math.max(loadDev || 0, arDev || 0);
+    const adjustment = havePhysio ? -Math.round(MAX_PHYSIO_NUDGE * Math.max(0, strain) * w) : 0;
+    const value = M.clamp(cog + adjustment);
+
+    const cogLow = cog < 55;
+    const arousedHigh = (arDev !== null && arDev >= 0.4) || (loadDev !== null && loadDev >= 0.4);
+    const arousedLow = arDev !== null && arDev <= -0.1 && (loadDev === null || loadDev < 0.2);
+
+    let state, label, why;
+    if (!havePhysio) {
+      state = "behaviour-only"; label = "Behaviour only";
+      why = "Cognitive scores only — no usable physiology this session, so this is a behavioural read.";
+    } else if (cogLow && arousedHigh) {
+      state = "stress"; label = "Over-aroused";
+      why = "Performance is down while arousal/load sit above your normal — a pattern that fits stress or over-arousal more than plain fatigue. Not diagnostic.";
+    } else if (cogLow && arousedLow) {
+      state = "fatigue"; label = "Under-recovered";
+      why = "Performance is down without elevated arousal — consistent with fatigue or under-recovery. Worth tracking against sleep and workload.";
+    } else if (!cogLow && arousedHigh) {
+      state = "strain"; label = "Performing under strain";
+      why = "Scores held up, but arousal/load are above your normal — you're performing at a higher autonomic cost, which may not be sustainable.";
+    } else {
+      state = "clear"; label = "Clear";
+      why = "Cognitive scores and physiology are both near your normal — a clean, well-aligned read.";
+    }
+    if (adjustment !== 0) why += ` Headline nudged ${adjustment} for elevated physiological strain (confidence-scaled).`;
+    else if (havePhysio && w < 0.15 && isFinite(trust)) why += " Signal confidence is low, so physiology is context only and didn't move the number.";
+
+    return { value, state, label, why, trust, adjustment };
+  }
+
+  // Back-compat surface for the results UI: a {present, text, state, label}
+  // bundle derived from the fused read. `present` is false only when there is
+  // no usable physiology to contextualise the cognitive scores.
+  function arousalContext(fused) {
+    if (!fused || fused.state === "behaviour-only" || fused.state === "unknown") {
+      return { present: false, text: "", state: fused ? fused.state : "unknown", label: fused ? fused.label : "" };
+    }
+    return { present: true, text: fused.why, state: fused.state, label: fused.label };
   }
 
   // The keystone score. If this is low, treat everything else as indicative
@@ -179,7 +247,11 @@
       };
     },
 
-    compute({ pvt, stroop, nback, baselinePPG, taskPPG, baselineGSR, taskGSR, quality, cleanFraction, taskCompletion, mode }) {
+    // The fusion seam. Consumes the already-computed scores plus the person's
+    // optional rolling norm and returns {value, state, label, why, trust}.
+    fusedReadiness,
+
+    compute({ pvt, stroop, nback, baselinePPG, taskPPG, baselineGSR, taskGSR, quality, cleanFraction, taskCompletion, mode, norm }) {
       const scores = {
         alertness: alertness(pvt),
         cognitiveControl: cognitiveControl(stroop),
@@ -193,7 +265,8 @@
           mode,
         }),
       };
-      scores.arousalContext = arousalContext(scores);
+      scores.fusedReadiness = fusedReadiness(scores, norm || null);
+      scores.arousalContext = arousalContext(scores.fusedReadiness);
       return scores;
     },
   };

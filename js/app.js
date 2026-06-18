@@ -369,8 +369,27 @@
   // ---- Results --------------------------------------------------------------
   let lastSavedId = null;
 
-  function showResults() {
+  // Pull the person's own rolling mean for load + arousal so fusion can read
+  // this session's physiology as a deviation from THEIR normal (not absolute).
+  // Best-effort: guests and brand-new profiles have no norm, and fusion falls
+  // back to the session-baseline-relative scores in that case.
+  async function physioNorm() {
+    if (session.guest) return null;
+    try {
+      const pid = NR.store.getActiveProfileId();
+      const [load, arousal] = await Promise.all([
+        NR.store.rollingBaseline(pid, (x) => x.scores && x.scores.physiologicalLoad, 14),
+        NR.store.rollingBaseline(pid, (x) => x.scores && x.scores.electrodermalArousal, 14),
+      ]);
+      return { load, arousal };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function showResults() {
     const taskCompletion = session.completedTasks / 3;
+    const norm = await physioNorm();
     const s = NR.scores.compute({
       pvt: session.results.pvt,
       stroop: session.results.stroop,
@@ -383,6 +402,7 @@
       cleanFraction: motion.cleanFraction(),
       taskCompletion,
       mode: session.mode,
+      norm,
     });
     session.scores = s;
     recorder.stop();
@@ -439,6 +459,9 @@
         reactivityTask: num(session.taskGSR && session.taskGSR.reactivity),
       },
       arousalContext: s.arousalContext || null,
+      fused: s.fusedReadiness
+        ? { state: s.fusedReadiness.state, value: num(s.fusedReadiness.value), adjustment: s.fusedReadiness.adjustment }
+        : null,
       motionClean: +motion.cleanFraction().toFixed(2),
       tags: [],
       notes: "",
@@ -507,10 +530,14 @@
 
     const context = el("#arousal-context");
     const contextText = el("#arousal-context-text");
+    const contextKicker = el("#arousal-context-kicker");
     if (context && contextText) {
       const ctx = s.arousalContext;
       context.classList.toggle("hidden", !ctx || !ctx.present);
-      if (ctx && ctx.present) contextText.textContent = ctx.text;
+      if (ctx && ctx.present) {
+        contextText.textContent = ctx.text;
+        if (contextKicker) contextKicker.textContent = "Cognition × physiology · " + (ctx.label || "context");
+      }
     }
 
     // Confidence is rendered separately and prominently — it gates the rest.
@@ -692,16 +719,26 @@
     const sourceDetail = el("#source-mode-detail");
     const sourcePrivacyNote = el("#source-privacy-note");
     const connectBtn = el("#connect-btn");
+    // The source toggle lets you switch between simulated and live at the moment
+    // of running a test, without going back out to the setup chooser. Switching
+    // re-launches the app with the other ?source= so the right sensor is built
+    // (the source is wired once, at load, from the URL — see SENSOR SWAP).
+    const sourceToggleText = el("#source-toggle-text");
+    const sourceToggleLink = el("#source-toggle-link");
     if (sensorSource === "serial") {
       if (sourceLabel) sourceLabel.textContent = "Live sensor mode.";
       if (sourceDetail) sourceDetail.textContent = "Chrome will ask you to select the connected ESP32 serial port.";
       if (sourcePrivacyNote) sourcePrivacyNote.innerHTML = "Live sensor mode reads the connected ESP32 directly in your browser. <strong>No account, no upload:</strong> session data stays on your device.";
       if (connectBtn) connectBtn.textContent = "Connect sensor & check fit";
+      if (sourceToggleText) sourceToggleText.textContent = "Running with the live ESP32 sensor.";
+      if (sourceToggleLink) { sourceToggleLink.textContent = "Use simulated data instead"; sourceToggleLink.href = "app.html?source=demo#/check"; }
     } else {
       if (sourceLabel) sourceLabel.textContent = "Simulated demo mode.";
       if (sourceDetail) sourceDetail.textContent = "Synthetic sensor data will demonstrate the complete workflow.";
       if (sourcePrivacyNote) sourcePrivacyNote.innerHTML = "Demo mode uses a simulated pulse, motion and arousal stream. <strong>No account, no upload:</strong> session data stays on your device.";
       if (connectBtn) connectBtn.textContent = "Start demo & check fit";
+      if (sourceToggleText) sourceToggleText.textContent = "Running with simulated sensor data — no hardware needed.";
+      if (sourceToggleLink) { sourceToggleLink.textContent = "Switch to live sensor"; sourceToggleLink.href = "app.html?source=serial#/check"; }
     }
 
     connectBtn.addEventListener("click", connect);

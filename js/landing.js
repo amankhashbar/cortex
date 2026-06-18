@@ -152,6 +152,11 @@
       return { link: a, section: id ? document.getElementById(id) : null };
     }).filter(function (s) { return s.section; });
     if (!spy.length) return;
+    // Nav order need not match document order (e.g. "Why Cortex" leads but its
+    // section sits mid-page), so sort by vertical position before picking the
+    // active link — otherwise the loop below would flag the last nav item in
+    // DOM order, not the section actually in view.
+    spy.sort(function (a, b) { return a.section.offsetTop - b.section.offsetTop; });
 
     var setActive = function (active) {
       spy.forEach(function (s) { s.link.classList.toggle("active", s.link === active); });

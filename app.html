@@ -122,6 +122,11 @@
           <span id="source-mode-detail">Synthetic sensor data will demonstrate the complete workflow.</span>
         </p>
 
+        <div class="source-toggle" id="source-toggle" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-4px 0 20px;font-size:13px;color:var(--ink-2);">
+          <span id="source-toggle-text">Running with simulated sensor data — no hardware needed.</span>
+          <a class="link-btn" id="source-toggle-link" href="app.html?source=serial#/check">Switch to live sensor</a>
+        </div>
+
         <div class="mode-row">
           <button class="mode-btn" data-mode="finger">
             <div class="m-title">Finger PPG</div>
@@ -249,7 +254,7 @@
         </div>
 
         <div class="context-panel hidden" id="arousal-context">
-          <div class="context-kicker">Experimental context · electrodermal arousal</div>
+          <div class="context-kicker" id="arousal-context-kicker">Cognition × physiology · experimental</div>
           <div class="context-text" id="arousal-context-text">—</div>
         </div>
 
